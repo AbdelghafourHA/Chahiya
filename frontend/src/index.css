@@ -1,0 +1,57 @@
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Tajawal:wght@200;300;400;500;700;800;900&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --color-primary: hsl(180 83% 25%);
+  --color-primary-foreground: hsl(0 0% 100%);
+
+  --color-secondary: hsl(25 95% 53%);
+  --color-secondary-foreground: hsl(0 0% 100%);
+
+  --color-background: hsl(30 20% 98%);
+  --color-surface: hsl(30 15% 94%);
+
+  --color-text: hsl(20 15% 15%);
+  --color-muted: hsl(20 10% 45%);
+
+  --color-border: hsl(30 10% 85%);
+
+  --color-accent: hsl(45 85% 55%);
+
+  --font-heading: "Cairo", sans-serif;
+  --font-body: "Tajawal", sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background-color: var(--color-background);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+}
+
+.container {
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 3rem);
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 15s linear infinite;
+}
