@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import useFood from "../stores/food.store";
 
-export default function EditProductModal({ product, onClose }) {
+export default function EditProductModal({ product, onClose, onEdit }) {
   const [form, setForm] = useState({
     title: "",
     price: "",
@@ -25,7 +25,6 @@ export default function EditProductModal({ product, onClose }) {
     { value: "drink", label: "مشروبات", emoji: "🥤" },
   ];
 
-  // Initialize form when product changes
   useEffect(() => {
     if (product) {
       setForm({
@@ -39,7 +38,6 @@ export default function EditProductModal({ product, onClose }) {
     }
   }, [product]);
 
-  // Don't render if product is not provided
   if (!product) {
     return null;
   }
@@ -48,16 +46,17 @@ export default function EditProductModal({ product, onClose }) {
     if (!file) return;
 
     if (file.size > MAX_SIZE) {
-      return setError("حجم الصورة يجب أن يكون أقل من 2MB");
+      setError("حجم الصورة يجب أن يكون أقل من 2MB");
+      return;
     }
 
     if (!file.type.startsWith("image/")) {
-      return setError("الرجاء اختيار صورة صالحة");
+      setError("الرجاء اختيار صورة صالحة");
+      return;
     }
 
     setError("");
     setForm({ ...form, image: file });
-
     const url = URL.createObjectURL(file);
     setPreview(url);
   };
@@ -87,11 +86,17 @@ export default function EditProductModal({ product, onClose }) {
       formData.append("image", form.image);
     }
 
-    const result = await editFood(product._id, formData);
+    // Use the onEdit callback if provided, otherwise use direct editFood
+    let result;
+    if (onEdit) {
+      result = await onEdit(product._id, formData);
+    } else {
+      result = await editFood(product._id, formData);
+    }
 
     setIsSubmitting(false);
 
-    if (result.success) {
+    if (result && result.success) {
       onClose();
     }
   };
@@ -110,7 +115,6 @@ export default function EditProductModal({ product, onClose }) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Title */}
           <div className="space-y-2">
             <label className="block text-sm text-white/60">اسم المنتج</label>
             <input
@@ -122,7 +126,6 @@ export default function EditProductModal({ product, onClose }) {
             />
           </div>
 
-          {/* Price */}
           <div className="space-y-2">
             <label className="block text-sm text-white/60">السعر (دج)</label>
             <input
@@ -134,7 +137,6 @@ export default function EditProductModal({ product, onClose }) {
             />
           </div>
 
-          {/* Category */}
           <div className="space-y-2">
             <label className="block text-sm text-white/60">القسم</label>
             <select
@@ -151,7 +153,6 @@ export default function EditProductModal({ product, onClose }) {
             </select>
           </div>
 
-          {/* Discount */}
           <div className="space-y-2">
             <label className="block text-sm text-white/60">الخصم (%)</label>
             <input
@@ -167,7 +168,6 @@ export default function EditProductModal({ product, onClose }) {
             />
           </div>
 
-          {/* Image */}
           <div className="space-y-2">
             <label className="block text-sm text-white/60">
               صورة جديدة (اختياري)
@@ -189,7 +189,6 @@ export default function EditProductModal({ product, onClose }) {
             {error && <p className="text-red-400 text-xs">{error}</p>}
           </div>
 
-          {/* Buttons */}
           <div className="flex gap-3 pt-2">
             <button
               type="button"

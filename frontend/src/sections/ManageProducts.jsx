@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 export default function ManageProducts() {
   const {
     fetchAllFoods,
+    editFood,
     removeFood,
     toggleAvailability,
     applyDiscountToCategory,
@@ -52,6 +53,16 @@ export default function ManageProducts() {
     };
     loadProducts();
   }, [currentPage, fetchAllFoods]);
+
+  const handleEditProduct = async (id, formData) => {
+    const result = await editFood(id, formData);
+    if (result && result.success) {
+      // Update the local state immediately
+      setFoods(foods.map((food) => (food._id === id ? result.food : food)));
+      toast.success("تم تحديث المنتج بنجاح");
+    }
+    return result;
+  };
 
   const handleDelete = async (id, title) => {
     if (window.confirm(`هل أنت متأكد من حذف "${title}"؟`)) {
@@ -342,6 +353,7 @@ export default function ManageProducts() {
         <EditProductModal
           product={editingProduct}
           onClose={() => setEditingProduct(null)}
+          onEdit={handleEditProduct}
         />
       )}
     </div>
