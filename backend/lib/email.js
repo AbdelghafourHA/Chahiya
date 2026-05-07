@@ -1,8 +1,13 @@
 // lib/nodemailer.js
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import dns from "dns";
 
 dotenv.config();
+
+// CRITICAL: Force Node.js to use IPv4 instead of IPv6
+// This fixes the Render ENETUNREACH error
+dns.setDefaultResultOrder("ipv4first");
 
 // Create transporter with IPv4 fix
 const transporter = nodemailer.createTransport({
@@ -13,30 +18,43 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  family: 4,
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 10000,
+  family: 4, // Force IPv4
+  connectionTimeout: 30000,
+  greetingTimeout: 30000,
+  socketTimeout: 30000,
+  // Additional Gmail-specific settings
+  tls: {
+    rejectUnauthorized: false,
+  },
 });
 
-// Verify connection
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("Email configuration error:", error.message);
-  } else {
-    console.log("Email server is ready to send messages");
-    console.log(`   Using: ${process.env.EMAIL_USER}`);
+// Verify connection with detailed logging
+const verifyConnection = async () => {
+  try {
+    await transporter.verify();
+    console.log("✅ Email server is ready to send messages");
+    console.log(`   📧 ${process.env.EMAIL_USER}`);
+    console.log(`   🌐 ${process.env.EMAIL_HOST}:${process.env.EMAIL_PORT}`);
+    return true;
+  } catch (error) {
+    console.error("❌ Email configuration error:", error.message);
+    console.error("   Trying to connect to:", process.env.EMAIL_HOST);
+    console.error("   Make sure you're using an App Password for Gmail");
+    return false;
   }
-});
-
-// Format currency with proper Arabic numbers
-const formatPrice = (price) => {
-  return new Intl.NumberFormat("ar-EG").format(price);
 };
 
-// Format date with proper Arabic numbers
+// Run verification
+verifyConnection();
+
+// Format currency
+const formatPrice = (price) => {
+  return new Intl.NumberFormat("en-US").format(price);
+};
+
+// Format date
 const formatDate = (date) => {
-  return new Date(date).toLocaleDateString("ar-EG", {
+  return new Date(date).toLocaleString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -49,22 +67,22 @@ const formatDate = (date) => {
 export const sendOrderNotificationEmail = async (order) => {
   try {
     const frontendUrl =
-      process.env.FRONTEND_URL || "https://chahiya.vercel.app";
+      process.env.FRONTEND_URL || "https://your-app.vercel.app";
     const orderId = order._id.toString();
 
     const itemsHtml = order.items
       .map(
         (item, index) => `
       <tr style="border-bottom: 1px solid #e0e0e0;">
-        <td style="padding: 12px 8px; text-align: right;">${index + 1}</td>
-        <td style="padding: 12px 8px; text-align: right;">${item.name}</td>
+        <td style="padding: 12px 8px; text-align: center;">${index + 1}</td>
+        <td style="padding: 12px 8px; text-align: left;">${item.name}</td>
         <td style="padding: 12px 8px; text-align: center;">${item.quantity}</td>
-        <td style="padding: 12px 8px; text-align: left;">${formatPrice(
+        <td style="padding: 12px 8px; text-align: right;">${formatPrice(
           item.price
-        )} دج</td>
-        <td style="padding: 12px 8px; text-align: left; font-weight: bold;">${formatPrice(
+        )} DZD</td>
+        <td style="padding: 12px 8px; text-align: right; font-weight: bold;">${formatPrice(
           item.price * item.quantity
-        )} دج</td>
+        )} DZD</td>
       </tr>
     `
       )
@@ -76,17 +94,17 @@ export const sendOrderNotificationEmail = async (order) => {
       subject: `New Order #${orderId}`,
       html: `
 <!DOCTYPE html>
-<html dir="rtl">
+<html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>New Order</title>
 </head>
-<body style="margin: 0; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
+<body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f4f4;">
 <div style="max-width: 650px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
 
   <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 20px; text-align: center;">
-    <h1 style="color: white; margin: 0; font-size: 28px;">New Order</h1>
+    <h1 style="color: white; margin: 0; font-size: 28px;">🛍️ New Order</h1>
     <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">A new order has been received</p>
   </div>
 
@@ -106,7 +124,7 @@ export const sendOrderNotificationEmail = async (order) => {
   </div>
 
   <div style="padding: 20px; border-bottom: 1px solid #e0e0e0;">
-    <h3 style="margin: 0 0 15px 0; color: #333; border-right: 4px solid #667eea; padding-right: 12px;">Customer Information</h3>
+    <h3 style="margin: 0 0 15px 0; color: #333;">📋 Customer Information</h3>
     <table style="width: 100%; border-collapse: collapse;">
       <tr>
         <td style="padding: 8px 0; width: 120px; color: #666;">Full Name:</td>
@@ -116,7 +134,7 @@ export const sendOrderNotificationEmail = async (order) => {
       </tr>
       <tr>
         <td style="padding: 8px 0; color: #666;">Phone:</td>
-        <td style="padding: 8px 0; font-weight: bold; direction: ltr; text-align: left;">${
+        <td style="padding: 8px 0; font-weight: bold;">${
           order.customer.phone
         }</td>
       </tr>
@@ -136,15 +154,15 @@ export const sendOrderNotificationEmail = async (order) => {
   </div>
 
   <div style="padding: 20px; border-bottom: 1px solid #e0e0e0;">
-    <h3 style="margin: 0 0 15px 0; color: #333; border-right: 4px solid #667eea; padding-right: 12px;">Order Details</h3>
+    <h3 style="margin: 0 0 15px 0; color: #333;">🍕 Order Details</h3>
     <table style="width: 100%; border-collapse: collapse;">
       <thead>
         <tr style="background-color: #f8f9fa; border-bottom: 2px solid #e0e0e0;">
-          <th style="padding: 10px 8px; text-align: right;">#</th>
-          <th style="padding: 10px 8px; text-align: right;">Item</th>
+          <th style="padding: 10px 8px; text-align: center;">#</th>
+          <th style="padding: 10px 8px; text-align: left;">Item</th>
           <th style="padding: 10px 8px; text-align: center;">Qty</th>
-          <th style="padding: 10px 8px; text-align: left;">Price</th>
-          <th style="padding: 10px 8px; text-align: left;">Total</th>
+          <th style="padding: 10px 8px; text-align: right;">Price</th>
+          <th style="padding: 10px 8px; text-align: right;">Total</th>
         </tr>
       </thead>
       <tbody>
@@ -154,7 +172,7 @@ export const sendOrderNotificationEmail = async (order) => {
   </div>
 
   <div style="padding: 20px; background-color: #f8f9fa;">
-    <div style="max-width: 300px; margin-right: auto;">
+    <div style="max-width: 300px; margin-left: auto;">
       <div style="display: flex; justify-content: space-between; padding: 8px 0;">
         <span style="color: #666;">Subtotal:</span>
         <span style="font-weight: bold;">${formatPrice(
@@ -178,7 +196,7 @@ export const sendOrderNotificationEmail = async (order) => {
   </div>
 
   <div style="padding: 20px; text-align: center;">
-    <a href="${frontendUrl}/dashboard" 
+    <a href="${frontendUrl}/dashboard/orders" 
        style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 32px; text-decoration: none; border-radius: 30px; font-weight: bold;">
       View Order in Dashboard
     </a>
@@ -186,7 +204,7 @@ export const sendOrderNotificationEmail = async (order) => {
 
   <div style="background-color: #333; color: #999; padding: 20px; text-align: center; font-size: 12px;">
     <p style="margin: 0;">This is an automated message, please do not reply</p>
-    <p style="margin: 10px 0 0 0;">© ${new Date().getFullYear()} Restaurant App - All rights reserved</p>
+    <p style="margin: 10px 0 0 0;">© ${new Date().getFullYear()} Restaurant App</p>
   </div>
 </div>
 </body>
@@ -195,10 +213,10 @@ export const sendOrderNotificationEmail = async (order) => {
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log(`Order notification email sent for order ${order._id}`);
+    console.log(`✅ Order notification email sent for order ${order._id}`);
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error("Email sending error:", error.message);
+    console.error("❌ Email sending error:", error.message);
     return { success: false, error: error.message };
   }
 };
@@ -228,16 +246,16 @@ export const sendOrderStatusUpdateEmail = async (order) => {
       subject: `Order Status Update #${order._id}`,
       html: `
 <!DOCTYPE html>
-<html dir="rtl">
+<html>
 <head>
   <meta charset="UTF-8">
   <title>Order Status Update</title>
 </head>
-<body style="margin: 0; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
+<body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f4f4;">
 <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
 
   <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 20px; text-align: center;">
-    <h1 style="color: white; margin: 0; font-size: 24px;">Order Status Update</h1>
+    <h1 style="color: white; margin: 0; font-size: 24px;">📦 Order Status Update</h1>
   </div>
 
   <div style="padding: 30px 20px; text-align: center;">
@@ -278,10 +296,10 @@ export const sendOrderStatusUpdateEmail = async (order) => {
 
     if (mailOptions.to) {
       await transporter.sendMail(mailOptions);
-      console.log(`Status update email sent for order ${order._id}`);
+      console.log(`✅ Status update email sent for order ${order._id}`);
     }
   } catch (error) {
-    console.error("Status email sending error:", error.message);
+    console.error("❌ Status email sending error:", error.message);
   }
 };
 
