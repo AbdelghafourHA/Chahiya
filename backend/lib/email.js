@@ -1,88 +1,47 @@
 // lib/nodemailer.js
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-import dns from "dns";
 
 dotenv.config();
 
-// CRITICAL: Force Node.js to use IPv4 instead of IPv6
-// This fixes the Render ENETUNREACH error
-dns.setDefaultResultOrder("ipv4first");
-
-// Create transporter with IPv4 fix
+// Create transporter - SAME PATTERN as your working old project
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
-  port: parseInt(process.env.EMAIL_PORT),
-  secure: false,
+  port: process.env.EMAIL_PORT,
+  secure: false, // false for 587, true for 465
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  family: 4, // Force IPv4
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000,
-  // Additional Gmail-specific settings
-  tls: {
-    rejectUnauthorized: false,
-  },
+  family: 4, // Force IPv4 - THIS IS THE KEY FIX
 });
 
-// Verify connection with detailed logging
-const verifyConnection = async () => {
-  try {
-    await transporter.verify();
-    console.log("✅ Email server is ready to send messages");
-    console.log(`   📧 ${process.env.EMAIL_USER}`);
-    console.log(`   🌐 ${process.env.EMAIL_HOST}:${process.env.EMAIL_PORT}`);
-    return true;
-  } catch (error) {
-    console.error("❌ Email configuration error:", error.message);
-    console.error("   Trying to connect to:", process.env.EMAIL_HOST);
-    console.error("   Make sure you're using an App Password for Gmail");
-    return false;
+// Verify connection
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("Email configuration error:", error);
+  } else {
+    console.log("Email server is ready to send messages");
   }
-};
-
-// Run verification
-verifyConnection();
-
-// Format currency
-const formatPrice = (price) => {
-  return new Intl.NumberFormat("en-US").format(price);
-};
-
-// Format date
-const formatDate = (date) => {
-  return new Date(date).toLocaleString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
+});
 
 // Send order notification email to admin
 export const sendOrderNotificationEmail = async (order) => {
   try {
     const frontendUrl =
       process.env.FRONTEND_URL || "https://your-app.vercel.app";
-    const orderId = order._id.toString();
 
-    const itemsHtml = order.items
+    // Format items list for email
+    const itemsList = order.items
       .map(
-        (item, index) => `
-      <tr style="border-bottom: 1px solid #e0e0e0;">
-        <td style="padding: 12px 8px; text-align: center;">${index + 1}</td>
-        <td style="padding: 12px 8px; text-align: left;">${item.name}</td>
-        <td style="padding: 12px 8px; text-align: center;">${item.quantity}</td>
-        <td style="padding: 12px 8px; text-align: right;">${formatPrice(
-          item.price
-        )} DZD</td>
-        <td style="padding: 12px 8px; text-align: right; font-weight: bold;">${formatPrice(
+        (item) => `
+      <tr style="border-bottom: 1px solid #ddd;">
+        <td style="padding: 8px;">${item.name}</td>
+        <td style="padding: 8px; text-align: center;">${item.quantity}</td>
+        <td style="padding: 8px; text-align: left;">${item.price} DZD</td>
+        <td style="padding: 8px; text-align: left; font-weight: bold;">${
           item.price * item.quantity
-        )} DZD</td>
+        } DZD</td>
       </tr>
     `
       )
@@ -91,132 +50,96 @@ export const sendOrderNotificationEmail = async (order) => {
     const mailOptions = {
       from: `"Restaurant App" <${process.env.EMAIL_USER}>`,
       to: process.env.ADMIN_EMAIL,
-      subject: `New Order #${orderId}`,
+      subject: `New Order #${order._id}`,
       html: `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>New Order</title>
-</head>
-<body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f4f4;">
-<div style="max-width: 650px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-
-  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 20px; text-align: center;">
-    <h1 style="color: white; margin: 0; font-size: 28px;">🛍️ New Order</h1>
-    <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">A new order has been received</p>
-  </div>
-
-  <div style="background-color: #f8f9fa; padding: 20px; border-bottom: 1px solid #e0e0e0;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-      <div>
-        <span style="font-size: 14px; color: #666;">Order Number</span>
-        <h2 style="margin: 5px 0 0 0; color: #667eea;">#${orderId}</h2>
-      </div>
-      <div>
-        <span style="font-size: 14px; color: #666;">Order Date</span>
-        <p style="margin: 5px 0 0 0; font-weight: bold;">${formatDate(
-          order.createdAt
-        )}</p>
-      </div>
-    </div>
-  </div>
-
-  <div style="padding: 20px; border-bottom: 1px solid #e0e0e0;">
-    <h3 style="margin: 0 0 15px 0; color: #333;">📋 Customer Information</h3>
-    <table style="width: 100%; border-collapse: collapse;">
-      <tr>
-        <td style="padding: 8px 0; width: 120px; color: #666;">Full Name:</td>
-        <td style="padding: 8px 0; font-weight: bold;">${
-          order.customer.fullName
-        }</td>
-      </tr>
-      <tr>
-        <td style="padding: 8px 0; color: #666;">Phone:</td>
-        <td style="padding: 8px 0; font-weight: bold;">${
-          order.customer.phone
-        }</td>
-      </tr>
-      <tr>
-        <td style="padding: 8px 0; color: #666;">Delivery Location:</td>
-        <td style="padding: 8px 0; font-weight: bold;">${
-          order.shippingPlace
-        }</td>
-      </tr>
-      <tr>
-        <td style="padding: 8px 0; color: #666;">Delivery Fee:</td>
-        <td style="padding: 8px 0; font-weight: bold;">${formatPrice(
-          order.shippingPrice
-        )} DZD</td>
-      </tr>
-    </table>
-  </div>
-
-  <div style="padding: 20px; border-bottom: 1px solid #e0e0e0;">
-    <h3 style="margin: 0 0 15px 0; color: #333;">🍕 Order Details</h3>
-    <table style="width: 100%; border-collapse: collapse;">
-      <thead>
-        <tr style="background-color: #f8f9fa; border-bottom: 2px solid #e0e0e0;">
-          <th style="padding: 10px 8px; text-align: center;">#</th>
-          <th style="padding: 10px 8px; text-align: left;">Item</th>
-          <th style="padding: 10px 8px; text-align: center;">Qty</th>
-          <th style="padding: 10px 8px; text-align: right;">Price</th>
-          <th style="padding: 10px 8px; text-align: right;">Total</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${itemsHtml}
-      </tbody>
-    </table>
-  </div>
-
-  <div style="padding: 20px; background-color: #f8f9fa;">
-    <div style="max-width: 300px; margin-left: auto;">
-      <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-        <span style="color: #666;">Subtotal:</span>
-        <span style="font-weight: bold;">${formatPrice(
-          order.itemsPrice
-        )} DZD</span>
-      </div>
-      <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-        <span style="color: #666;">Delivery Fee:</span>
-        <span style="font-weight: bold;">${formatPrice(
-          order.shippingPrice
-        )} DZD</span>
-      </div>
-      <div style="border-top: 2px dashed #ccc; margin: 10px 0;"></div>
-      <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-        <span style="font-size: 18px; font-weight: bold; color: #333;">Total:</span>
-        <span style="font-size: 20px; font-weight: bold; color: #667eea;">${formatPrice(
-          order.totalPrice
-        )} DZD</span>
-      </div>
-    </div>
-  </div>
-
-  <div style="padding: 20px; text-align: center;">
-    <a href="${frontendUrl}/dashboard/orders" 
-       style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 32px; text-decoration: none; border-radius: 30px; font-weight: bold;">
-      View Order in Dashboard
-    </a>
-  </div>
-
-  <div style="background-color: #333; color: #999; padding: 20px; text-align: center; font-size: 12px;">
-    <p style="margin: 0;">This is an automated message, please do not reply</p>
-    <p style="margin: 10px 0 0 0;">© ${new Date().getFullYear()} Restaurant App</p>
-  </div>
-</div>
-</body>
-</html>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+          <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #667eea;">
+            <h1 style="color: #667eea; margin: 0;">🛍️ New Order</h1>
+            <p style="color: #666; margin: 5px 0 0;">Order #${order._id}</p>
+          </div>
+          
+          <div style="padding: 20px 0;">
+            <h3 style="color: #667eea;">Customer Information:</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 8px 0; font-weight: bold;">Name:</td>
+                <td style="padding: 8px 0;">${order.customer.fullName}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; font-weight: bold;">Phone:</td>
+                <td style="padding: 8px 0;">${order.customer.phone}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; font-weight: bold;">Location:</td>
+                <td style="padding: 8px 0;">${order.shippingPlace}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; font-weight: bold;">Delivery Fee:</td>
+                <td style="padding: 8px 0;">${order.shippingPrice} DZD</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; font-weight: bold;">Date:</td>
+                <td style="padding: 8px 0;">${new Date(
+                  order.createdAt
+                ).toLocaleString()}</td>
+              </tr>
+            </table>
+            
+            <h3 style="color: #667eea; margin-top: 20px;">Order Items:</h3>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
+              <thead>
+                <tr style="background-color: #f5f5f5;">
+                  <th style="padding: 8px; text-align: left;">Item</th>
+                  <th style="padding: 8px; text-align: center;">Qty</th>
+                  <th style="padding: 8px; text-align: left;">Price</th>
+                  <th style="padding: 8px; text-align: left;">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsList}
+              </tbody>
+              <tfoot>
+                <tr style="background-color: #f5f5f5;">
+                  <td colspan="3" style="padding: 8px; text-align: left; font-weight: bold;">Subtotal:</td>
+                  <td style="padding: 8px; text-align: left; font-weight: bold;">${
+                    order.itemsPrice
+                  } DZD</td>
+                </tr>
+                <tr style="background-color: #f5f5f5;">
+                  <td colspan="3" style="padding: 8px; text-align: left; font-weight: bold;">Delivery Fee:</td>
+                  <td style="padding: 8px; text-align: left; font-weight: bold;">${
+                    order.shippingPrice
+                  } DZD</td>
+                </tr>
+                <tr style="background-color: #f5f5f5;">
+                  <td colspan="3" style="padding: 8px; text-align: left; font-weight: bold; color: #667eea;">Total:</td>
+                  <td style="padding: 8px; text-align: left; font-weight: bold; color: #667eea;">${
+                    order.totalPrice
+                  } DZD</td>
+                </tr>
+              </tfoot>
+            </table>
+            
+            <div style="margin-top: 20px; text-align: center;">
+              <a href="${frontendUrl}/dashboard/orders" 
+                 style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">
+                View Order in Dashboard
+              </a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 12px; color: #999;">
+            <p>© ${new Date().getFullYear()} Restaurant App. All rights reserved.</p>
+          </div>
+        </div>
       `,
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log(`✅ Order notification email sent for order ${order._id}`);
+    console.log("Order notification email sent:", info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
-    console.error("❌ Email sending error:", error.message);
+    console.error("Error sending order email:", error);
     return { success: false, error: error.message };
   }
 };
@@ -232,74 +155,52 @@ export const sendOrderStatusUpdateEmail = async (order) => {
       cancelled: "Cancelled",
     };
 
-    const statusColors = {
-      pending: "#f59e0b",
-      confirmed: "#10b981",
-      preparing: "#3b82f6",
-      delivered: "#059669",
-      cancelled: "#ef4444",
-    };
-
     const mailOptions = {
       from: `"Restaurant App" <${process.env.EMAIL_USER}>`,
       to: order.customer.phone.includes("@") ? order.customer.phone : undefined,
       subject: `Order Status Update #${order._id}`,
       html: `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Order Status Update</title>
-</head>
-<body style="margin: 0; padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f4f4;">
-<div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-
-  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 20px; text-align: center;">
-    <h1 style="color: white; margin: 0; font-size: 24px;">📦 Order Status Update</h1>
-  </div>
-
-  <div style="padding: 30px 20px; text-align: center;">
-    <p style="font-size: 18px; margin: 0 0 10px 0;">Hello <strong>${
-      order.customer.fullName
-    }</strong>,</p>
-    <p style="color: #666; margin: 0 0 20px 0;">Your order <strong style="color: #667eea;">#${
-      order._id
-    }</strong></p>
-    
-    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 12px; margin: 20px 0;">
-      <span style="font-size: 14px; color: #666;">Current Status</span>
-      <h2 style="margin: 10px 0 0 0; color: ${statusColors[order.status]};">${
-        statusMessages[order.status]
-      }</h2>
-    </div>
-    
-    <p style="color: #666; line-height: 1.6;">
-      ${
-        order.status === "delivered"
-          ? "Your order has been delivered successfully. Thank you for your trust!"
-          : order.status === "cancelled"
-          ? "Your order has been cancelled. Please contact us for more information."
-          : "You will be updated with any new developments regarding your order."
-      }
-    </p>
-  </div>
-
-  <div style="background-color: #333; color: #999; padding: 20px; text-align: center; font-size: 12px;">
-    <p style="margin: 0;">Thank you for shopping with us</p>
-    <p style="margin: 10px 0 0 0;">© ${new Date().getFullYear()} Restaurant App</p>
-  </div>
-</div>
-</body>
-</html>
+        <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+          <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #667eea;">
+            <h1 style="color: #667eea; margin: 0;">📦 Order Update</h1>
+          </div>
+          
+          <div style="padding: 20px 0; text-align: center;">
+            <p style="font-size: 18px;">Hello <strong>${
+              order.customer.fullName
+            }</strong>,</p>
+            <p>Your order <strong>#${order._id}</strong> status is now:</p>
+            
+            <div style="background-color: #f5f5f5; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <h2 style="color: #667eea; margin: 0;">${
+                statusMessages[order.status]
+              }</h2>
+            </div>
+            
+            <p style="color: #666;">
+              ${
+                order.status === "delivered"
+                  ? "Your order has been delivered successfully!"
+                  : order.status === "cancelled"
+                  ? "Your order has been cancelled."
+                  : "Thank you for your patience!"
+              }
+            </p>
+          </div>
+          
+          <div style="text-align: center; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: 12px; color: #999;">
+            <p>© ${new Date().getFullYear()} Restaurant App</p>
+          </div>
+        </div>
       `,
     };
 
     if (mailOptions.to) {
-      await transporter.sendMail(mailOptions);
-      console.log(`✅ Status update email sent for order ${order._id}`);
+      const info = await transporter.sendMail(mailOptions);
+      console.log("Status update email sent:", info.messageId);
     }
   } catch (error) {
-    console.error("❌ Status email sending error:", error.message);
+    console.error("Error sending status email:", error);
   }
 };
 
