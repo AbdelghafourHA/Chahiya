@@ -11,10 +11,10 @@ export default function Navbar() {
           <div className="hidden md:flex items-center justify-between">
             {/* Left Links */}
             <div className="flex items-center gap-6 font-body text-primary-foreground">
-              <a href="#" className="hover:text-secondary transition">
+              <a href="#hero" className="hover:text-secondary transition">
                 الرئيسية
               </a>
-              <a href="#" className="hover:text-secondary transition">
+              <a href="#menu" className="hover:text-secondary transition">
                 قائمة الطعام
               </a>
             </div>
@@ -27,10 +27,10 @@ export default function Navbar() {
 
             {/* Right Links */}
             <div className="flex items-center gap-6 font-body text-primary-foreground">
-              <a href="#" className="hover:text-secondary transition">
+              <a href="#order" className="hover:text-secondary transition">
                 أطلب الآن
               </a>
-              <a href="#" className="hover:text-secondary transition">
+              <a href="#contact" className="hover:text-secondary transition">
                 تواصل معنا
               </a>
             </div>
@@ -46,16 +46,16 @@ export default function Navbar() {
 
             {/* Links */}
             <div className="w-full flex flex-wrap justify-between items-center gap-3 font-body text-xs">
-              <a href="#" className="hover:text-secondary transition">
+              <a href="#hero" className="hover:text-secondary transition">
                 الرئيسية
               </a>
-              <a href="#" className="hover:text-secondary transition">
+              <a href="#menu" className="hover:text-secondary transition">
                 قائمة الطعام
               </a>
-              <a href="#" className="hover:text-secondary transition">
+              <a href="#order" className="hover:text-secondary transition">
                 أطلب الآن
               </a>
-              <a href="#" className="hover:text-secondary transition">
+              <a href="#contact" className="hover:text-secondary transition">
                 تواصل معنا
               </a>
             </div>

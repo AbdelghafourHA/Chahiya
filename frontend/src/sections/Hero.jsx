@@ -6,6 +6,7 @@ import heroImg from "../assets/Hero.jpg";
 export default function Hero() {
   return (
     <section
+      id="hero"
       className="relative min-h-screen flex flex-col text-primary-foreground"
       style={{
         backgroundImage: `url(${heroImg})`,
@@ -37,10 +38,10 @@ export default function Hero() {
               لنصنع لحظات لا تُنسى لكل زبون.
             </p>
             <a
-              href="#"
+              href="#contact"
               className="border border-primary-foreground/40 px-5 py-2 rounded-full text-sm hover:bg-primary-foreground hover:text-text transition"
             >
-              اكتشف المزيد
+              تواصل معنا
             </a>
           </div>
 
@@ -56,7 +57,7 @@ export default function Hero() {
               وطعمه المميز كما تحب.
             </p>
             <a
-              href="#"
+              href="#order"
               className="bg-secondary text-secondary-foreground px-5 py-2 rounded-full text-sm hover:opacity-90 transition"
             >
               اطلب الآن

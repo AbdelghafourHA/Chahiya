@@ -55,3 +55,7 @@ h6 {
 .animate-marquee {
   animation: marquee 15s linear infinite;
 }
+
+html {
+  scroll-behavior: smooth;
+}

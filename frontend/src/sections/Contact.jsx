@@ -12,10 +12,12 @@ import {
 
 export default function Contact() {
   return (
-    <section className="py-16 bg-[#0f0f0f] text-white">
+    <section id="contact" className="py-16 bg-[#0f0f0f] text-white">
       <div className="container max-w-5xl">
         {/* Title */}
-        <h2 className="text-center font-heading text-2xl mb-10">تواصل معنا</h2>
+        <h2 className="text-center font-heading text-3xl md:text-4xl mb-12">
+          تواصل معنا
+        </h2>
 
         {/* Layout */}
         <div className="grid md:grid-cols-2 gap-8">
@@ -33,13 +35,13 @@ export default function Contact() {
               className="flex  items-center  gap-2 text-sm hover:text-primary transition"
             >
               <FontAwesomeIcon icon={faPhone} />
-              <span>0550 00 00 00</span>
+              <span dir="ltr">0550 00 00 00</span>
             </a>
 
             {/* Location */}
             <div className="flex  items-center md:justify-start gap-2 text-sm text-white/70">
               <FontAwesomeIcon icon={faLocationDot} />
-              <span>ورقلة - حي النصر</span>
+              <span>الجزائر - حي النصر</span>
             </div>
 
             {/* Social Icons */}
