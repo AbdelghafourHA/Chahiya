@@ -49,7 +49,7 @@ const formatDate = (date) => {
 export const sendOrderNotificationEmail = async (order) => {
   try {
     const frontendUrl =
-      process.env.FRONTEND_URL || "https://your-app.vercel.app";
+      process.env.FRONTEND_URL || "https://chahiya.vercel.app";
     const orderId = order._id.toString();
 
     const itemsHtml = order.items
@@ -178,7 +178,7 @@ export const sendOrderNotificationEmail = async (order) => {
   </div>
 
   <div style="padding: 20px; text-align: center;">
-    <a href="${frontendUrl}/dashboard/orders" 
+    <a href="${frontendUrl}/dashboard" 
        style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 32px; text-decoration: none; border-radius: 30px; font-weight: bold;">
       View Order in Dashboard
     </a>
