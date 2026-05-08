@@ -265,6 +265,7 @@ export default function Menu() {
                               type: "spring",
                               stiffness: 200,
                             }}
+                            dir="ltr"
                             className="absolute top-4 right-4 bg-red-500 text-white text-xs px-2 py-1 rounded-full"
                           >
                             {item.discount}% OFF
