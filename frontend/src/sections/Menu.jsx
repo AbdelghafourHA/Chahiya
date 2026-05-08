@@ -1,4 +1,4 @@
-// sections/Menu.jsx - Fixed version
+// sections/Menu.jsx - CORRECT FIXED VERSION
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import useFood from "../stores/food.store";
@@ -47,7 +47,6 @@ const cardVariants = {
   },
 };
 
-// Simple pagination animation - only once on view
 const paginationVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
@@ -99,6 +98,16 @@ export default function Menu() {
     setCurrentPage(newPage);
   };
 
+  // FIXED: Filter logic
+  // - "all" tab: shows ALL foods (available + unavailable)
+  // - Category tabs: shows ONLY available foods (unavailable are hidden completely)
+  const displayFoods =
+    active === "all"
+      ? foods
+      : foods.filter(
+          (food) => food.category === active && food.isAvailable === true
+        );
+
   if (loading && foods.length === 0) {
     return (
       <section id="menu" className="py-20 bg-black text-white">
@@ -132,10 +141,6 @@ export default function Menu() {
       </section>
     );
   }
-
-  // Filter foods based on active category and availability
-  const displayFoods =
-    active === "all" ? foods : foods.filter((food) => food.category === active);
 
   return (
     <motion.section
@@ -207,7 +212,7 @@ export default function Menu() {
                         variants={cardVariants}
                         whileHover={{ y: -5 }}
                         className={`bg-white/5 border border-white/10 rounded-[50px] pt-12 pb-6 px-4 text-center transition-all duration-300 group relative ${
-                          !item.isAvailable
+                          !item.isAvailable && active === "all"
                             ? "opacity-60 grayscale"
                             : "hover:bg-white/10 hover:shadow-xl"
                         }`}
@@ -265,7 +270,8 @@ export default function Menu() {
                             {item.discount}% OFF
                           </motion.div>
                         )}
-                        {!item.isAvailable && (
+                        {/* Show "غير متوفر" badge ONLY in "all" tab */}
+                        {!item.isAvailable && active === "all" && (
                           <div className="absolute inset-0 bg-black/60 rounded-[50px] flex items-center justify-center">
                             <span className="bg-red-500/90 text-white text-sm px-4 py-2 rounded-full font-bold">
                               غير متوفر
@@ -277,7 +283,7 @@ export default function Menu() {
                   </motion.div>
                 </AnimatePresence>
 
-                {/* Pagination - Simple animation only once on view */}
+                {/* Pagination */}
                 {menuPagination.totalPages > 1 && (
                   <motion.div
                     variants={paginationVariants}
