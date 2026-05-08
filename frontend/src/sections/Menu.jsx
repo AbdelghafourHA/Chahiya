@@ -1,4 +1,4 @@
-// sections/Menu.jsx
+// sections/Menu.jsx - Fixed version
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import useFood from "../stores/food.store";
@@ -133,6 +133,10 @@ export default function Menu() {
     );
   }
 
+  // Filter foods based on active category and availability
+  const displayFoods =
+    active === "all" ? foods : foods.filter((food) => food.category === active);
+
   return (
     <motion.section
       id="menu"
@@ -182,7 +186,7 @@ export default function Menu() {
 
           {/* Food Items Grid */}
           <motion.div variants={containerVariants}>
-            {foods.length === 0 && !loading ? (
+            {displayFoods.length === 0 && !loading ? (
               <motion.div variants={itemVariants} className="text-center py-12">
                 <p className="text-white/60">لا توجد منتجات في هذا القسم</p>
               </motion.div>
@@ -197,7 +201,7 @@ export default function Menu() {
                     variants={containerVariants}
                     className="grid grid-cols-2 md:grid-cols-3 gap-6"
                   >
-                    {foods.map((item) => (
+                    {displayFoods.map((item) => (
                       <motion.div
                         key={item._id}
                         variants={cardVariants}
