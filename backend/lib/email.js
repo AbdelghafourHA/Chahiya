@@ -29,7 +29,7 @@ transporter.verify((error, success) => {
 export const sendOrderNotificationEmail = async (order) => {
   try {
     const frontendUrl =
-      process.env.FRONTEND_URL || "https://your-app.vercel.app";
+      process.env.FRONTEND_URL || "https://chahiya.vercel.app";
 
     // Format items list for email
     const itemsList = order.items
@@ -54,7 +54,7 @@ export const sendOrderNotificationEmail = async (order) => {
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
           <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #667eea;">
-            <h1 style="color: #667eea; margin: 0;">🛍️ New Order</h1>
+            <h1 style="color: #667eea; margin: 0;">🍕🥤 New Order</h1>
             <p style="color: #666; margin: 5px 0 0;">Order #${order._id}</p>
           </div>
           
@@ -121,7 +121,7 @@ export const sendOrderNotificationEmail = async (order) => {
             </table>
             
             <div style="margin-top: 20px; text-align: center;">
-              <a href="${frontendUrl}/dashboard/orders" 
+              <a href="${frontendUrl}/dashboard" 
                  style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">
                 View Order in Dashboard
               </a>
