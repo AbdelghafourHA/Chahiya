@@ -41,10 +41,13 @@ const foodSchema = new mongoose.Schema(
   }
 );
 
-// Fix: Remove 'next' parameter completely
 foodSchema.pre("save", function () {
   this.discountedPrice = this.price - (this.price * this.discount) / 100;
 });
+
+foodSchema.index({ category: 1, isAvailable: 1 });
+foodSchema.index({ title: "text" });
+foodSchema.index({ createdAt: -1 });
 
 const Food = mongoose.model("Food", foodSchema);
 

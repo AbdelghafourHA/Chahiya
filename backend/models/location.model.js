@@ -18,6 +18,9 @@ const locationSchema = new mongoose.Schema(
   }
 );
 
+locationSchema.index({ title: 1 });
+locationSchema.index({ price: 1 });
+
 const Location = mongoose.model("Location", locationSchema);
 
 export default Location;

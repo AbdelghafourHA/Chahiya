@@ -82,7 +82,6 @@ const orderSchema = new mongoose.Schema(
   }
 );
 
-// Calculate total price before saving
 orderSchema.pre("save", function () {
   this.itemsPrice = this.items.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -90,6 +89,11 @@ orderSchema.pre("save", function () {
   );
   this.totalPrice = this.itemsPrice + this.shippingPrice;
 });
+
+orderSchema.index({ "customer.fullName": "text", "customer.phone": "text" });
+orderSchema.index({ status: 1 });
+orderSchema.index({ createdAt: -1 });
+orderSchema.index({ shippingPlace: 1 });
 
 const Order = mongoose.model("Order", orderSchema);
 
