@@ -7,14 +7,13 @@ const useAuth = create((set) => ({
   loading: false,
   isAuthenticated: false,
   error: null,
-  authChecked: false, // Add this to track if auth has been checked
+  authChecked: false,
 
   login: async (email, password) => {
     try {
       set({ loading: true, error: null });
       const response = await api.post("/admin/login", { email, password });
 
-      // Store token in localStorage for iOS fallback
       if (response.data.token) {
         localStorage.setItem("adminToken", response.data.token);
       }
@@ -25,6 +24,7 @@ const useAuth = create((set) => ({
         loading: false,
         authChecked: true,
       });
+
       toast.success("تم تسجيل الدخول بنجاح!");
       return true;
     } catch (error) {
@@ -56,7 +56,7 @@ const useAuth = create((set) => ({
         error: error.message,
         authChecked: true,
       });
-      toast.error("خطاء في تسجيل الخروج!");
+      toast.error("خطأ في تسجيل الخروج!");
     }
   },
 
@@ -64,10 +64,15 @@ const useAuth = create((set) => ({
     try {
       set({ loading: true, error: null });
 
-      // Get token from localStorage if exists
       const token = localStorage.getItem("adminToken");
-      if (token) {
-        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      if (!token) {
+        set({
+          user: null,
+          isAuthenticated: false,
+          loading: false,
+          authChecked: true,
+        });
+        return;
       }
 
       const response = await api.get("/admin/check-auth");
@@ -79,10 +84,7 @@ const useAuth = create((set) => ({
         authChecked: true,
       });
     } catch (error) {
-      // Clear token if check fails
       localStorage.removeItem("adminToken");
-      delete api.defaults.headers.common["Authorization"];
-
       set({
         user: null,
         isAuthenticated: false,

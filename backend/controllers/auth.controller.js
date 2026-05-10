@@ -3,9 +3,11 @@ import jwt from "jsonwebtoken";
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
+
   if (!email || !password) {
     return res.status(400).json({ message: "Email and password are required" });
   }
+
   try {
     const admin = await Admin.findOne({ email });
 
@@ -23,41 +25,29 @@ export const login = async (req, res) => {
       expiresIn: "7d",
     });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      path: "/",
-    });
-
     const adminWithoutPassword = admin.toObject();
     delete adminWithoutPassword.password;
 
     res.status(200).json({
       message: "Login successful",
       user: adminWithoutPassword,
+      token: token,
     });
   } catch (error) {
+    console.error("Login error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
 export const logout = (req, res) => {
   try {
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      path: "/",
-    });
     res.status(200).json({ message: "Logout successful" });
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-export const checkAuth = (req, res) => {
+export const checkAuth = async (req, res) => {
   try {
     res.status(200).json({ user: req.admin });
   } catch (error) {
