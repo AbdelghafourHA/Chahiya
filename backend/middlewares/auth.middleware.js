@@ -4,7 +4,6 @@ import Admin from "../models/admin.model.js";
 const protect = async (req, res, next) => {
   let token;
 
-  // Check for token in cookies first, then Authorization header
   if (req.cookies.token) {
     token = req.cookies.token;
   } else if (
