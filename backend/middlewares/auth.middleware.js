@@ -4,7 +4,6 @@ import Admin from "../models/admin.model.js";
 const protect = async (req, res, next) => {
   let token;
 
-  // فقط من Authorization header
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")

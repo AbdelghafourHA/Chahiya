@@ -1,20 +1,29 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUtensils, faBellConcierge } from "@fortawesome/free-solid-svg-icons";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import heroImg from "../assets/Hero.jpg";
 
 export default function Hero() {
   const ref = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
   });
 
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   const opacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -69,15 +78,14 @@ export default function Hero() {
       animate="visible"
       variants={containerVariants}
     >
-      {/* Background Image with Parallax */}
+      {/* Background Image with Parallax (disabled on mobile) */}
       <motion.div
         className="absolute inset-0"
         style={{
           backgroundImage: `url(${heroImg})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          opacity,
-          scale,
+          ...(!isMobile && { opacity, scale }),
         }}
       />
 
