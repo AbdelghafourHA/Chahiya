@@ -24,42 +24,40 @@ export default function Hero() {
   const opacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
 
+  // إصلاح الـ variants لـ RTL
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        duration: 0.5,
-        staggerChildren: 0.15,
+        duration: 0.4,
+        staggerChildren: 0.1,
         ease: "easeOut",
       },
     },
   };
 
   const titleVariants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: "easeOut" },
-    },
-  };
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
       transition: { duration: 0.5, ease: "easeOut" },
     },
   };
 
-  const statVariants = {
-    hidden: { opacity: 0, y: 20 },
+  const cardVariants = {
+    hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      y: 0,
       transition: { duration: 0.4, ease: "easeOut" },
+    },
+  };
+
+  const statVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { duration: 0.3, ease: "easeOut" },
     },
   };
 
@@ -78,7 +76,7 @@ export default function Hero() {
       animate="visible"
       variants={containerVariants}
     >
-      {/* Background Image with Parallax (disabled on mobile) */}
+      {/* Background Image with Parallax */}
       <motion.div
         className="absolute inset-0"
         style={{
@@ -191,8 +189,8 @@ export default function Hero() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{
-                  delay: 0.3 + index * 0.1,
-                  duration: 0.4,
+                  delay: 0.2 + index * 0.1,
+                  duration: 0.3,
                   type: "spring",
                   stiffness: 200,
                 }}
