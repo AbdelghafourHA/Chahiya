@@ -8,7 +8,7 @@ import Contact from "../sections/Contact";
 
 const Home = () => {
   return (
-    <div>
+    <div dir="rtl">
       <Navbar />
       <Hero />
       <Menu />

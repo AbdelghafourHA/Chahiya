@@ -1,63 +1,56 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUtensils, faBellConcierge } from "@fortawesome/free-solid-svg-icons";
-import { useRef, useState, useEffect } from "react";
+import { useRef } from "react";
 import heroImg from "../assets/Hero.jpg";
 
 export default function Hero() {
   const ref = useRef(null);
-  const [isMobile, setIsMobile] = useState(false);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
   });
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
   const opacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
 
-  // إصلاح الـ variants لـ RTL
+  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        duration: 0.4,
-        staggerChildren: 0.1,
+        duration: 0.5,
+        staggerChildren: 0.15,
         ease: "easeOut",
       },
     },
   };
 
   const titleVariants = {
-    hidden: { opacity: 0 },
+    hidden: { opacity: 0, y: 30 },
     visible: {
       opacity: 1,
-      transition: { duration: 0.5, ease: "easeOut" },
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" },
     },
   };
 
   const cardVariants = {
-    hidden: { opacity: 0 },
+    hidden: { opacity: 0, y: 30 },
     visible: {
       opacity: 1,
-      transition: { duration: 0.4, ease: "easeOut" },
+      y: 0,
+      transition: { duration: 0.5, ease: "easeOut" },
     },
   };
 
   const statVariants = {
-    hidden: { opacity: 0 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
-      transition: { duration: 0.3, ease: "easeOut" },
+      y: 0,
+      transition: { duration: 0.4, ease: "easeOut" },
     },
   };
 
@@ -83,7 +76,8 @@ export default function Hero() {
           backgroundImage: `url(${heroImg})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          ...(!isMobile && { opacity, scale }),
+          opacity,
+          scale,
         }}
       />
 
@@ -189,8 +183,8 @@ export default function Hero() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{
-                  delay: 0.2 + index * 0.1,
-                  duration: 0.3,
+                  delay: 0.3 + index * 0.1,
+                  duration: 0.4,
                   type: "spring",
                   stiffness: 200,
                 }}
