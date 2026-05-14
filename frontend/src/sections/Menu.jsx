@@ -144,6 +144,7 @@ export default function Menu() {
 
   return (
     <motion.section
+      dir="rtl"
       id="menu"
       initial="hidden"
       whileInView="visible"

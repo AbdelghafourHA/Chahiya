@@ -195,6 +195,7 @@ export default function Order() {
 
   return (
     <motion.section
+      dir="rtl"
       id="order"
       initial="hidden"
       whileInView="visible"

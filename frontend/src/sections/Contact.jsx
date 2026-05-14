@@ -89,6 +89,7 @@ export default function Contact() {
 
   return (
     <motion.section
+      dir="rtl"
       id="contact"
       initial="hidden"
       whileInView="visible"

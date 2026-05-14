@@ -63,6 +63,7 @@ export default function Hero() {
   return (
     <motion.section
       ref={ref}
+      dir="rtl"
       id="hero"
       className="relative min-h-screen flex flex-col text-primary-foreground overflow-hidden"
       initial="hidden"
