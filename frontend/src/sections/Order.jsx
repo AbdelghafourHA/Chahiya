@@ -4,47 +4,41 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 import useFood from "../stores/food.store";
 import useLocation from "../stores/locations.store";
-import useOrders from "../stores/orders.store";
+
+// 👇 Change this to the restaurant's WhatsApp number (international format, no +)
+const WHATSAPP_NUMBER = "213698055344";
 
 // Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      duration: 0.4,
-      staggerChildren: 0.1,
-      ease: "easeOut",
-    },
+    transition: { duration: 0.4, staggerChildren: 0.1, ease: "easeOut" },
   },
 };
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: "easeOut" },
-  },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
 const cartItemVariants = {
   hidden: { opacity: 0, x: -20 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.3, ease: "easeOut" },
-  },
-  exit: {
-    opacity: 0,
-    x: 20,
-    transition: { duration: 0.2 },
-  },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.3, ease: "easeOut" } },
+  exit: { opacity: 0, x: 20, transition: { duration: 0.2 } },
 };
 
 const buttonVariants = {
   hover: { scale: 1.02 },
   tap: { scale: 0.98 },
+};
+
+// Helper: get final price after discount
+const getFinalPrice = (item) => {
+  if (item.discount > 0) {
+    return Math.floor(item.price - (item.price * item.discount) / 100);
+  }
+  return item.price;
 };
 
 export default function Order() {
@@ -53,10 +47,7 @@ export default function Order() {
   const [selectedPlace, setSelectedPlace] = useState("");
   const [foods, setFoods] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({
-    fullName: "",
-    phone: "",
-  });
+  const [form, setForm] = useState({ fullName: "", phone: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { fetchAllFoods } = useFood();
@@ -65,7 +56,6 @@ export default function Order() {
     loading: locationsLoading,
     fetchAllLocations,
   } = useLocation();
-  const { createOrder } = useOrders();
 
   useEffect(() => {
     const loadData = async () => {
@@ -95,20 +85,19 @@ export default function Order() {
   const filteredFoods = foods.filter((f) => f.category === category);
 
   const addToCart = (item) => {
+    const finalPrice = getFinalPrice(item);
     setCart((prev) => {
       const exist = prev.find((i) => i._id === item._id);
       if (exist) {
-        // toast.success(`تم زيادة الكمية: ${item.title}`);
         return prev.map((i) =>
           i._id === item._id ? { ...i, quantity: i.quantity + 1 } : i
         );
       }
-      // toast.success(`تم إضافة ${item.title} إلى السلة`);
-      return [...prev, { ...item, quantity: 1 }];
+      return [...prev, { ...item, price: finalPrice, quantity: 1 }];
     });
   };
 
-  const decreaseQuantity = (id, title) => {
+  const decreaseQuantity = (id) => {
     setCart((prev) =>
       prev
         .map((i) => (i._id === id ? { ...i, quantity: i.quantity - 1 } : i))
@@ -126,7 +115,29 @@ export default function Order() {
   const shipping = selectedLocationData?.price || 0;
   const totalPrice = itemsPrice + shipping;
 
-  const handleSubmit = async (e) => {
+  // Build the WhatsApp message
+  const buildWhatsAppMessage = () => {
+    const lines = [];
+    lines.push("🍕 *طلب جديد*");
+    lines.push("");
+    lines.push(`👤 الاسم: ${form.fullName}`);
+    lines.push(`📞 الهاتف: ${form.phone}`);
+    lines.push(`📍 الموقع: ${selectedLocationData?.title || ""}`);
+    lines.push("");
+    lines.push("📋 *الطلب:*");
+    cart.forEach((item) => {
+      lines.push(
+        `- ${item.title} × ${item.quantity} = ${item.price * item.quantity} دج`
+      );
+    });
+    lines.push("");
+    lines.push(`المجموع الفرعي: ${itemsPrice} دج`);
+    lines.push(`التوصيل: ${shipping} دج`);
+    lines.push(`*الإجمالي: ${totalPrice} دج*`);
+    return lines.join("\n");
+  };
+
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!form.fullName.trim()) {
@@ -148,31 +159,21 @@ export default function Order() {
 
     setIsSubmitting(true);
 
-    const orderData = {
-      customer: {
-        fullName: form.fullName,
-        phone: form.phone,
-      },
-      items: cart.map((item) => ({
-        _id: item._id,
-        name: item.title,
-        price: item.price,
-        category: item.category,
-        quantity: item.quantity,
-      })),
-      shippingPlace: selectedLocationData.title,
-      shippingPrice: shipping,
-    };
+    const message = buildWhatsAppMessage();
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+      message
+    )}`;
 
-    const result = await createOrder(orderData);
+    window.open(url, "_blank");
+
+    toast.success("تم فتح واتساب، أرسل الطلب الآن");
+
+    // Reset form after opening WhatsApp
+    setCart([]);
+    setSelectedPlace("");
+    setForm({ fullName: "", phone: "" });
     setIsSubmitting(false);
-
-    if (result.success) {
-      setCart([]);
-      setSelectedPlace("");
-      setForm({ fullName: "", phone: "" });
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   if (loading || locationsLoading) {
@@ -289,34 +290,33 @@ export default function Order() {
               </div>
             ) : (
               <div className="flex flex-wrap gap-2">
-                {filteredFoods.map((item) => (
-                  <motion.button
-                    type="button"
-                    key={item._id}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => addToCart(item)}
-                    className="text-xs md:text-sm px-3 py-2 rounded-full bg-white/5 border border-white/10 hover:border-primary transition"
-                    disabled={isSubmitting}
-                  >
-                    {item.title} -{" "}
-                    {item.discount > 0 ? (
-                      <>
-                        <span className="line-through text-white/40 mx-1">
-                          {item.price}
-                        </span>
-                        <span className="text-primary">
-                          {Math.floor(
-                            item.price - (item.price * item.discount) / 100
-                          )}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="mr-1">{item.price}</span>
-                    )}{" "}
-                    دج
-                  </motion.button>
-                ))}
+                {filteredFoods.map((item) => {
+                  const finalPrice = getFinalPrice(item);
+                  return (
+                    <motion.button
+                      type="button"
+                      key={item._id}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => addToCart(item)}
+                      className="text-xs md:text-sm px-3 py-2 rounded-full bg-white/5 border border-white/10 hover:border-primary transition"
+                      disabled={isSubmitting}
+                    >
+                      {item.title} -{" "}
+                      {item.discount > 0 ? (
+                        <>
+                          <span className="line-through text-white/40 mx-1">
+                            {item.price}
+                          </span>
+                          <span className="text-primary">{finalPrice}</span>
+                        </>
+                      ) : (
+                        <span className="mr-1">{item.price}</span>
+                      )}{" "}
+                      دج
+                    </motion.button>
+                  );
+                })}
               </div>
             )}
           </motion.div>
@@ -349,7 +349,7 @@ export default function Order() {
                       type="button"
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => decreaseQuantity(item._id, item.title)}
+                      onClick={() => decreaseQuantity(item._id)}
                       className="w-6 h-6 bg-[#222] rounded-full text-xs hover:bg-[#333] transition"
                       disabled={isSubmitting}
                     >
@@ -419,7 +419,7 @@ export default function Order() {
             disabled={isSubmitting || cart.length === 0}
             className="w-full bg-secondary text-black py-2.5 rounded-xl text-sm font-semibold hover:bg-secondary/80 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? "جاري إرسال الطلب..." : "تأكيد الطلب"}
+            {isSubmitting ? "جاري التحويل..." : "تأكيد الطلب"}
           </motion.button>
         </motion.form>
       </div>
