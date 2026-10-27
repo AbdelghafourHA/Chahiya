@@ -1,5 +1,5 @@
 // sections/Menu.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import useFood from "../stores/food.store";
 import useCategory from "../stores/category.store";
@@ -44,6 +44,48 @@ const paginationVariants = {
   },
 };
 
+/* -------------------------------------------------------------------------- */
+/*                        Inline skeletons (RTL aware)                        */
+/* -------------------------------------------------------------------------- */
+
+/** Category pill skeleton — same shape as the real pills */
+function CategorySkeleton({ count = 5 }) {
+  return (
+    <div className="flex md:flex-col gap-3 flex-wrap max-md:justify-center">
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          className="h-9 w-24 rounded-full bg-surface border border-border animate-pulse"
+          style={{ animationDelay: `${i * 80}ms` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** Food card skeleton — same shape as the real cards */
+function FoodCardSkeleton({ count = 6 }) {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+      {Array.from({ length: count }).map((_, i) => (
+        <div
+          key={i}
+          className="bg-surface border border-border rounded-[50px] pt-12 pb-6 px-4 text-center animate-pulse"
+          style={{ animationDelay: `${i * 60}ms` }}
+        >
+          <div className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-full bg-border" />
+          <div className="h-4 bg-border rounded w-24 mx-auto mb-2" />
+          <div className="h-5 bg-border rounded w-16 mx-auto" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                    Menu                                    */
+/* -------------------------------------------------------------------------- */
+
 export default function Menu() {
   const [active, setActive] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -57,22 +99,26 @@ export default function Menu() {
     hasPrevPage: false,
   });
 
-  const { loading, fetchAllFoods, fetchFoodsByCategory } = useFood();
   const {
-    categories: dynamicCategories,
-    loading: categoriesLoading,
-    fetchCategories,
-  } = useCategory();
+    loading: foodsLoading,
+    fetchAllFoods,
+    fetchFoodsByCategory,
+  } = useFood();
+  const { categories: dynamicCategories, fetchCategories } = useCategory();
 
   const itemsPerPage = 6;
 
-  // Load categories once (only active ones for the public menu)
+  // Load categories ONCE at mount
+  const categoriesFetchedRef = useRef(false);
   useEffect(() => {
+    if (categoriesFetchedRef.current) return;
+    categoriesFetchedRef.current = true;
     fetchCategories(true);
   }, [fetchCategories]);
 
-  // Load foods when tab/page changes
+  // Load foods on tab or page change
   useEffect(() => {
+    let cancelled = false;
     const loadFoods = async () => {
       let result;
       if (active === "all") {
@@ -81,12 +127,16 @@ export default function Menu() {
         result = await fetchFoodsByCategory(active, currentPage, itemsPerPage);
       }
 
-      if (result && result.success) {
+      if (!cancelled && result && result.success) {
         setFoods(result.foods);
         setMenuPagination(result.pagination);
       }
     };
     loadFoods();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, currentPage]);
 
   const handleCategoryChange = (categoryId) => {
@@ -105,7 +155,7 @@ export default function Menu() {
           (food) => food.category === active && food.isAvailable === true
         );
 
-  // Build the tab list: "الكل" + dynamic categories
+  // Tabs: "الكل" + dynamic categories
   const tabs = [
     { id: "all", name: "الكل", emoji: "📋" },
     ...dynamicCategories.map((c) => ({
@@ -115,34 +165,19 @@ export default function Menu() {
     })),
   ];
 
-  if ((loading || categoriesLoading) && foods.length === 0) {
+  // Full-screen skeleton ONLY on first-ever load (categories not yet in store)
+  const isFirstLoad = dynamicCategories.length === 0 && foodsLoading;
+
+  if (isFirstLoad) {
     return (
-      <section id="menu" className="py-20 bg-background text-text">
+      <section id="menu" dir="rtl" className="py-20 bg-background text-text">
         <div className="container mx-auto px-4">
           <h2 className="text-center font-heading text-3xl md:text-4xl mb-12">
             اكتشف قائمتنا
           </h2>
           <div className="grid md:grid-cols-[200px_1fr] gap-10">
-            <div className="flex md:flex-col gap-3">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div
-                  key={i}
-                  className="h-10 w-24 bg-surface rounded-full animate-pulse"
-                ></div>
-              ))}
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-              {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div
-                  key={i}
-                  className="bg-surface border border-border rounded-[50px] pt-12 pb-6 px-4 text-center animate-pulse"
-                >
-                  <div className="w-20 h-20 md:w-24 md:h-24 mx-auto mb-4 rounded-full bg-border"></div>
-                  <div className="h-4 bg-border rounded w-24 mx-auto mb-2"></div>
-                  <div className="h-5 bg-border rounded w-16 mx-auto"></div>
-                </div>
-              ))}
-            </div>
+            <CategorySkeleton />
+            <FoodCardSkeleton />
           </div>
         </div>
       </section>
@@ -194,7 +229,10 @@ export default function Menu() {
 
           {/* Food Items Grid */}
           <motion.div variants={containerVariants}>
-            {displayFoods.length === 0 && !loading ? (
+            {/* Only the product area shows a loading state on tab change */}
+            {foodsLoading ? (
+              <FoodCardSkeleton />
+            ) : displayFoods.length === 0 ? (
               <motion.div variants={itemVariants} className="text-center py-12">
                 <p className="text-muted">لا توجد منتجات في هذا القسم</p>
               </motion.div>
