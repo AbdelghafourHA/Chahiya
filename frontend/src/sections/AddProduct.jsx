@@ -1,12 +1,13 @@
 // sections/AddProduct.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useFood from "../stores/food.store";
+import useCategory from "../stores/category.store";
 
 export default function AddProduct({ onSuccess }) {
   const [form, setForm] = useState({
     title: "",
     price: "",
-    category: "pizza",
+    category: "",
     discount: 0,
     image: null,
   });
@@ -16,30 +17,36 @@ export default function AddProduct({ onSuccess }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { addFood } = useFood();
+  const {
+    categories,
+    loading: categoriesLoading,
+    fetchCategories,
+  } = useCategory();
 
-  const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+  const MAX_SIZE = 2 * 1024 * 1024;
 
-  const categories = [
-    { value: "pizza", label: "Pizza", emoji: "🍕" },
-    { value: "tacos", label: "Tacos", emoji: "🌮" },
-    { value: "burger", label: "Burger", emoji: "🍔" },
-    { value: "drink", label: "Drink", emoji: "🥤" },
-  ];
+  // Fetch ALL categories (including inactive — so admin can assign products before activating)
+  useEffect(() => {
+    fetchCategories(false);
+  }, [fetchCategories]);
+
+  // Default to first category once loaded
+  useEffect(() => {
+    if (!form.category && categories.length > 0) {
+      setForm((prev) => ({ ...prev, category: categories[0].slug }));
+    }
+  }, [categories, form.category]);
 
   const handleImage = (file) => {
     if (!file) return;
-
     if (file.size > MAX_SIZE) {
       return setError("Image size must be less than 2MB");
     }
-
     if (!file.type.startsWith("image/")) {
       return setError("Please select a valid image file");
     }
-
     setError("");
     setForm({ ...form, image: file });
-
     const url = URL.createObjectURL(file);
     setPreview(url);
   };
@@ -47,17 +54,18 @@ export default function AddProduct({ onSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
     if (!form.title.trim()) {
       setError("Product name is required");
       return;
     }
-
     if (!form.price || form.price <= 0) {
       setError("Valid price is required");
       return;
     }
-
+    if (!form.category) {
+      setError("Please select a category");
+      return;
+    }
     if (!form.image) {
       setError("Product image is required");
       return;
@@ -74,35 +82,29 @@ export default function AddProduct({ onSuccess }) {
     formData.append("image", form.image);
 
     const result = await addFood(formData);
-
     setIsSubmitting(false);
 
     if (result.success) {
-      // Reset form
       setForm({
         title: "",
         price: "",
-        category: "pizza",
+        category: categories[0]?.slug || "",
         discount: 0,
         image: null,
       });
       setPreview(null);
-
-      // Call success callback to switch tabs
-      if (onSuccess) {
-        onSuccess();
-      }
+      if (onSuccess) onSuccess();
     }
   };
 
   return (
-    <div className="bg-[#161616] rounded-2xl p-6 max-w-2xl mx-auto">
+    <div className="bg-surface border border-border rounded-2xl p-6 max-w-2xl mx-auto">
       <h2 className="text-2xl font-bold mb-6 text-center">Add New Product</h2>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Title */}
         <div className="space-y-2">
-          <label className="block text-sm text-white/60 font-medium">
+          <label className="block text-sm text-muted font-medium">
             Product Name
           </label>
           <input
@@ -110,14 +112,14 @@ export default function AddProduct({ onSuccess }) {
             placeholder="e.g., Margherita Pizza"
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
-            className="w-full p-3 bg-[#111] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
+            className="w-full p-3 bg-background border border-border text-text placeholder:text-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
             disabled={isSubmitting}
           />
         </div>
 
         {/* Price */}
         <div className="space-y-2">
-          <label className="block text-sm text-white/60 font-medium">
+          <label className="block text-sm text-muted font-medium">
             Price (DZ)
           </label>
           <input
@@ -125,25 +127,29 @@ export default function AddProduct({ onSuccess }) {
             placeholder="e.g., 1200"
             value={form.price}
             onChange={(e) => setForm({ ...form, price: e.target.value })}
-            className="w-full p-3 bg-[#111] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
+            className="w-full p-3 bg-background border border-border text-text placeholder:text-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
             disabled={isSubmitting}
           />
         </div>
 
         {/* Category */}
         <div className="space-y-2">
-          <label className="block text-sm text-white/60 font-medium">
+          <label className="block text-sm text-muted font-medium">
             Category
           </label>
           <select
             value={form.category}
             onChange={(e) => setForm({ ...form, category: e.target.value })}
-            className="w-full p-3 bg-[#111] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
-            disabled={isSubmitting}
+            className="w-full p-3 bg-background border border-border text-text rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
+            disabled={isSubmitting || categoriesLoading}
           >
+            {categories.length === 0 && (
+              <option value="">لا توجد أقسام — أضف قسماً أولاً</option>
+            )}
             {categories.map((cat) => (
-              <option key={cat.value} value={cat.value}>
-                {cat.emoji} {cat.label}
+              <option key={cat._id} value={cat.slug}>
+                {cat.emoji} {cat.name}
+                {!cat.isActive ? " (غير مفعل)" : ""}
               </option>
             ))}
           </select>
@@ -151,7 +157,7 @@ export default function AddProduct({ onSuccess }) {
 
         {/* Discount */}
         <div className="space-y-2">
-          <label className="block text-sm text-white/60 font-medium">
+          <label className="block text-sm text-muted font-medium">
             Discount (%)
           </label>
           <input
@@ -163,27 +169,24 @@ export default function AddProduct({ onSuccess }) {
             onChange={(e) =>
               setForm({ ...form, discount: parseInt(e.target.value) || 0 })
             }
-            className="w-full p-3 bg-[#111] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
+            className="w-full p-3 bg-background border border-border text-text placeholder:text-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
             disabled={isSubmitting}
           />
-          <p className="text-xs text-white/40">Leave 0 for no discount</p>
+          <p className="text-xs text-muted">Leave 0 for no discount</p>
         </div>
 
         {/* Image Upload */}
         <div className="space-y-2">
-          <label className="block text-sm text-white/60 font-medium">
+          <label className="block text-sm text-muted font-medium">
             Product Image (Max 2MB)
           </label>
-
           <input
             type="file"
             accept="image/*"
             onChange={(e) => handleImage(e.target.files[0])}
-            className="w-full text-xs file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:bg-primary file:text-white hover:file:bg-primary/80 cursor-pointer transition"
+            className="w-full text-xs file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:bg-primary file:text-primary-foreground hover:file:bg-primary/80 cursor-pointer transition text-muted"
             disabled={isSubmitting}
           />
-
-          {/* Preview */}
           {preview && (
             <div className="mt-3">
               <img
@@ -193,15 +196,18 @@ export default function AddProduct({ onSuccess }) {
               />
             </div>
           )}
-
-          {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
+          {error && (
+            <p className="text-red-500 dark:text-red-400 text-xs mt-2">
+              {error}
+            </p>
+          )}
         </div>
 
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={isSubmitting}
-          className="w-full bg-primary py-3 rounded-xl text-sm font-semibold hover:bg-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+          disabled={isSubmitting || categories.length === 0}
+          className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-semibold hover:bg-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6"
         >
           {isSubmitting ? "Adding Product..." : "Add Product"}
         </button>

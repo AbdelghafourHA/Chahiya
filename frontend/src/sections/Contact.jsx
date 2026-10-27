@@ -14,16 +14,11 @@ import {
   faWhatsapp,
 } from "@fortawesome/free-brands-svg-icons";
 
-// Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      duration: 0.4,
-      staggerChildren: 0.1,
-      ease: "easeOut",
-    },
+    transition: { duration: 0.4, staggerChildren: 0.1, ease: "easeOut" },
   },
 };
 
@@ -43,10 +38,7 @@ const cardVariants = {
     scale: 1,
     transition: { duration: 0.4, ease: "easeOut" },
   },
-  hover: {
-    y: -5,
-    transition: { duration: 0.2 },
-  },
+  hover: { y: -5, transition: { duration: 0.2 } },
 };
 
 const socialIconVariants = {
@@ -56,13 +48,8 @@ const socialIconVariants = {
     scale: 1,
     transition: { duration: 0.3, ease: "easeOut" },
   },
-  hover: {
-    scale: 1.1,
-    transition: { duration: 0.2 },
-  },
-  tap: {
-    scale: 0.95,
-  },
+  hover: { scale: 1.1, transition: { duration: 0.2 } },
+  tap: { scale: 0.95 },
 };
 
 const workingHoursVariants = {
@@ -95,7 +82,7 @@ export default function Contact() {
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
       variants={containerVariants}
-      className="py-20 bg-[#0f0f0f] text-white"
+      className="py-20 bg-surface text-text transition-colors duration-300"
     >
       <div className="container max-w-6xl mx-auto px-4">
         {/* Title */}
@@ -103,7 +90,6 @@ export default function Contact() {
           <h2 className="font-heading text-3xl md:text-4xl">تواصل معنا</h2>
         </motion.div>
 
-        {/* Layout */}
         <div className="grid md:grid-cols-2 gap-10">
           {/* RIGHT - Contact Info */}
           <motion.div
@@ -124,7 +110,7 @@ export default function Contact() {
             <motion.div
               variants={cardVariants}
               whileHover="hover"
-              className="space-y-4 bg-white/5 rounded-2xl p-5"
+              className="space-y-4 bg-background border border-border rounded-2xl p-5"
             >
               <h3 className="text-lg font-heading border-r-2 border-primary pr-3">
                 معلومات الاتصال
@@ -135,11 +121,8 @@ export default function Contact() {
                 <motion.a
                   href="tel:0550000000"
                   variants={itemVariants}
-                  whileHover={{
-                    scale: 1.02,
-                    backgroundColor: "rgba(255,255,255,0.05)",
-                  }}
-                  className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200"
+                  whileHover={{ scale: 1.02 }}
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-surface transition-all duration-200"
                 >
                   <motion.div
                     whileHover={{ rotate: 360, scale: 1.1 }}
@@ -152,7 +135,7 @@ export default function Contact() {
                     />
                   </motion.div>
                   <div>
-                    <p className="text-xs text-white/50">اتصل بنا</p>
+                    <p className="text-xs text-muted">اتصل بنا</p>
                     <p className="text-sm font-medium" dir="ltr">
                       +213 550 00 00 00
                     </p>
@@ -162,11 +145,8 @@ export default function Contact() {
                 {/* Location */}
                 <motion.div
                   variants={itemVariants}
-                  whileHover={{
-                    scale: 1.02,
-                    backgroundColor: "rgba(255,255,255,0.05)",
-                  }}
-                  className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200"
+                  whileHover={{ scale: 1.02 }}
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-surface transition-all duration-200"
                 >
                   <motion.div
                     whileHover={{ rotate: 360, scale: 1.1 }}
@@ -179,7 +159,7 @@ export default function Contact() {
                     />
                   </motion.div>
                   <div>
-                    <p className="text-xs text-white/50">موقعنا</p>
+                    <p className="text-xs text-muted">موقعنا</p>
                     <p className="text-sm">الجزائر - حي النصر، شارع فلسطين</p>
                   </div>
                 </motion.div>
@@ -187,11 +167,8 @@ export default function Contact() {
                 {/* Email */}
                 <motion.div
                   variants={itemVariants}
-                  whileHover={{
-                    scale: 1.02,
-                    backgroundColor: "rgba(255,255,255,0.05)",
-                  }}
-                  className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200"
+                  whileHover={{ scale: 1.02 }}
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-surface transition-all duration-200"
                 >
                   <motion.div
                     whileHover={{ rotate: 360, scale: 1.1 }}
@@ -204,7 +181,7 @@ export default function Contact() {
                     />
                   </motion.div>
                   <div>
-                    <p className="text-xs text-white/50">البريد الإلكتروني</p>
+                    <p className="text-xs text-muted">البريد الإلكتروني</p>
                     <p className="text-sm">chahiya@gmail.com</p>
                   </div>
                 </motion.div>
@@ -215,7 +192,7 @@ export default function Contact() {
             <motion.div
               variants={cardVariants}
               whileHover="hover"
-              className="bg-white/5 rounded-2xl p-5"
+              className="bg-background border border-border rounded-2xl p-5"
             >
               <h3 className="text-lg font-heading border-r-2 border-primary pr-3 mb-4 flex items-center gap-2">
                 <FontAwesomeIcon
@@ -234,13 +211,15 @@ export default function Contact() {
                     whileInView="visible"
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1 }}
-                    className="flex justify-between items-center border-b border-white/10 pb-2 last:border-0"
+                    className="flex justify-between items-center border-b border-border pb-2 last:border-0"
                   >
                     <span className="text-sm">{item.day}</span>
                     <motion.span
                       whileHover={{ scale: 1.05 }}
                       className={`text-sm ${
-                        item.hours === "مغلق" ? "text-red-400" : "text-white/70"
+                        item.hours === "مغلق"
+                          ? "text-red-500 dark:text-red-400"
+                          : "text-muted"
                       }`}
                     >
                       {item.hours}
@@ -254,7 +233,7 @@ export default function Contact() {
             <motion.div
               variants={cardVariants}
               whileHover="hover"
-              className="bg-white/5 rounded-2xl p-5"
+              className="bg-background border border-border rounded-2xl p-5"
             >
               <h3 className="text-lg font-heading border-r-2 border-primary pr-3 mb-4">
                 تابعنا
@@ -273,12 +252,12 @@ export default function Contact() {
                     transition={{ delay: index * 0.1 }}
                     whileHover="hover"
                     whileTap="tap"
-                    className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center group"
+                    className="w-12 h-12 bg-surface border border-border rounded-full flex items-center justify-center group"
                     aria-label={social.name}
                   >
                     <FontAwesomeIcon
                       icon={social.icon}
-                      className="text-white/70 group-hover:text-primary transition text-lg"
+                      className="text-muted group-hover:text-primary transition text-lg"
                     />
                   </motion.a>
                 ))}
@@ -291,7 +270,7 @@ export default function Contact() {
             <motion.div
               variants={cardVariants}
               whileHover="hover"
-              className="bg-white/5 rounded-2xl p-5"
+              className="bg-background border border-border rounded-2xl p-5"
             >
               <h3 className="text-lg font-heading border-r-2 border-primary pr-3 mb-4">
                 موقعنا على الخريطة
@@ -301,7 +280,7 @@ export default function Contact() {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5 }}
-                className="w-full h-[280px] md:h-[400px] rounded-xl overflow-hidden border border-white/10"
+                className="w-full h-[280px] md:h-[400px] rounded-xl overflow-hidden border border-border"
               >
                 <iframe
                   title="Restaurant Location"
@@ -335,7 +314,7 @@ export default function Contact() {
                 </motion.div>
                 <div>
                   <p className="text-sm font-medium">طلبك عندنا بأمان</p>
-                  <p className="text-xs text-white/50">
+                  <p className="text-xs text-muted">
                     توصيل سريع - جودة عالية - أسعار مناسبة
                   </p>
                 </div>

@@ -4,11 +4,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 import useFood from "../stores/food.store";
 import useLocation from "../stores/locations.store";
+import useCategory from "../stores/category.store";
 
 // 👇 Change this to the restaurant's WhatsApp number (international format, no +)
 const WHATSAPP_NUMBER = "213698055344";
 
-// Animation variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -33,7 +33,6 @@ const buttonVariants = {
   tap: { scale: 0.98 },
 };
 
-// Helper: get final price after discount
 const getFinalPrice = (item) => {
   if (item.discount > 0) {
     return Math.floor(item.price - (item.price * item.discount) / 100);
@@ -42,7 +41,7 @@ const getFinalPrice = (item) => {
 };
 
 export default function Order() {
-  const [category, setCategory] = useState("pizza");
+  const [category, setCategory] = useState("");
   const [cart, setCart] = useState([]);
   const [selectedPlace, setSelectedPlace] = useState("");
   const [foods, setFoods] = useState([]);
@@ -56,13 +55,20 @@ export default function Order() {
     loading: locationsLoading,
     fetchAllLocations,
   } = useLocation();
+  const {
+    categories: dynamicCategories,
+    loading: categoriesLoading,
+    fetchCategories,
+  } = useCategory();
 
+  // Load categories, foods, and locations together
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       const [foodResult] = await Promise.all([
         fetchAllFoods(1, 100),
         fetchAllLocations(),
+        fetchCategories(true),
       ]);
       if (foodResult && foodResult.success) {
         const availableFoods = foodResult.foods.filter(
@@ -73,14 +79,14 @@ export default function Order() {
       setLoading(false);
     };
     loadData();
-  }, [fetchAllFoods, fetchAllLocations]);
+  }, [fetchAllFoods, fetchAllLocations, fetchCategories]);
 
-  const categories = [
-    { id: "pizza", name: "بيتزا", emoji: "🍕" },
-    { id: "tacos", name: "تاكوس", emoji: "🌮" },
-    { id: "burger", name: "برغر", emoji: "🍔" },
-    { id: "drink", name: "مشروبات", emoji: "🥤" },
-  ];
+  // Once categories arrive, default to the first one
+  useEffect(() => {
+    if (!category && dynamicCategories.length > 0) {
+      setCategory(dynamicCategories[0].slug);
+    }
+  }, [dynamicCategories, category]);
 
   const filteredFoods = foods.filter((f) => f.category === category);
 
@@ -115,7 +121,6 @@ export default function Order() {
   const shipping = selectedLocationData?.price || 0;
   const totalPrice = itemsPrice + shipping;
 
-  // Build the WhatsApp message
   const buildWhatsAppMessage = () => {
     const lines = [];
     lines.push("🍕 *طلب جديد*");
@@ -168,7 +173,6 @@ export default function Order() {
 
     toast.success("تم فتح واتساب، أرسل الطلب الآن");
 
-    // Reset form after opening WhatsApp
     setCart([]);
     setSelectedPlace("");
     setForm({ fullName: "", phone: "" });
@@ -176,18 +180,18 @@ export default function Order() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  if (loading || locationsLoading) {
+  if (loading || locationsLoading || categoriesLoading) {
     return (
-      <section id="order" className="py-20 bg-black text-white">
+      <section id="order" className="py-20 bg-background text-text">
         <div className="container max-w-3xl mx-auto px-4">
           <h2 className="text-center font-heading text-3xl md:text-4xl mb-12">
             اطلب الآن
           </h2>
           <div className="space-y-5 max-w-2xl mx-auto">
-            <div className="h-12 bg-white/5 rounded-xl animate-pulse"></div>
-            <div className="h-12 bg-white/5 rounded-xl animate-pulse"></div>
-            <div className="h-12 bg-white/5 rounded-xl animate-pulse"></div>
-            <div className="h-32 bg-white/5 rounded-2xl animate-pulse"></div>
+            <div className="h-12 bg-surface rounded-xl animate-pulse"></div>
+            <div className="h-12 bg-surface rounded-xl animate-pulse"></div>
+            <div className="h-12 bg-surface rounded-xl animate-pulse"></div>
+            <div className="h-32 bg-surface rounded-2xl animate-pulse"></div>
           </div>
         </div>
       </section>
@@ -202,7 +206,7 @@ export default function Order() {
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
       variants={containerVariants}
-      className="py-20 bg-black text-white"
+      className="py-20 bg-background text-text transition-colors duration-300"
     >
       <div className="container max-w-3xl mx-auto px-4">
         <motion.h2
@@ -224,7 +228,7 @@ export default function Order() {
               placeholder="الاسم الكامل"
               value={form.fullName}
               onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-              className="p-3 text-sm rounded-xl bg-white/5 border border-white/10 outline-none focus:border-primary transition"
+              className="p-3 text-sm rounded-xl bg-surface border border-border text-text placeholder:text-muted outline-none focus:border-primary transition"
               disabled={isSubmitting}
               required
             />
@@ -233,7 +237,7 @@ export default function Order() {
               placeholder="رقم الهاتف"
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              className="p-3 text-sm rounded-xl bg-white/5 border border-white/10 outline-none focus:border-primary transition"
+              className="p-3 text-sm rounded-xl bg-surface border border-border text-text placeholder:text-muted outline-none focus:border-primary transition"
               disabled={isSubmitting}
               required
             />
@@ -244,37 +248,35 @@ export default function Order() {
             <select
               value={selectedPlace}
               onChange={(e) => setSelectedPlace(e.target.value)}
-              className="w-full p-3 text-sm rounded-xl bg-white/5 border border-white/10 outline-none focus:border-primary transition"
+              className="w-full p-3 text-sm rounded-xl bg-surface border border-border text-text outline-none focus:border-primary transition"
               disabled={isSubmitting}
               required
             >
-              <option className="text-text" value="">
-                اختر موقع التوصيل
-              </option>
+              <option value="">اختر موقع التوصيل</option>
               {locations.map((loc) => (
-                <option className="text-text" key={loc._id} value={loc._id}>
+                <option key={loc._id} value={loc._id}>
                   {loc.title} (+{loc.price} دج)
                 </option>
               ))}
             </select>
           </motion.div>
 
-          {/* Categories */}
+          {/* Categories — dynamic */}
           <motion.div
             variants={itemVariants}
             className="flex gap-2 overflow-x-auto pb-2"
           >
-            {categories.map((cat) => (
+            {dynamicCategories.map((cat) => (
               <motion.button
                 type="button"
-                key={cat.id}
+                key={cat._id}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setCategory(cat.id)}
-                className={`text-xs md:text-sm px-3 py-1.5 rounded-full whitespace-nowrap transition ${
-                  category === cat.id
-                    ? "bg-primary text-white"
-                    : "bg-white/5 text-white/60 hover:bg-white/10"
+                onClick={() => setCategory(cat.slug)}
+                className={`text-xs md:text-sm px-3 py-1.5 rounded-full whitespace-nowrap transition border ${
+                  category === cat.slug
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-surface text-muted border-border hover:bg-border hover:text-text"
                 }`}
               >
                 {cat.emoji} {cat.name}
@@ -285,7 +287,7 @@ export default function Order() {
           {/* Food Items */}
           <motion.div variants={itemVariants}>
             {filteredFoods.length === 0 ? (
-              <div className="text-center py-8 text-white/60">
+              <div className="text-center py-8 text-muted">
                 <p>لا توجد أطباق متاحة في هذا القسم حالياً</p>
               </div>
             ) : (
@@ -299,13 +301,13 @@ export default function Order() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => addToCart(item)}
-                      className="text-xs md:text-sm px-3 py-2 rounded-full bg-white/5 border border-white/10 hover:border-primary transition"
+                      className="text-xs md:text-sm px-3 py-2 rounded-full bg-surface border border-border text-text hover:border-primary transition"
                       disabled={isSubmitting}
                     >
                       {item.title} -{" "}
                       {item.discount > 0 ? (
                         <>
-                          <span className="line-through text-white/40 mx-1">
+                          <span className="line-through text-muted mx-1">
                             {item.price}
                           </span>
                           <span className="text-primary">{finalPrice}</span>
@@ -324,12 +326,12 @@ export default function Order() {
           {/* Shopping Cart */}
           <motion.div
             variants={itemVariants}
-            className="bg-white/5 p-4 rounded-2xl space-y-3"
+            className="bg-surface border border-border p-4 rounded-2xl space-y-3"
           >
             <h3 className="font-heading text-sm">سلة الطلب</h3>
 
             {cart.length === 0 && (
-              <p className="text-xs text-white/60">لم تضف أي شيء بعد</p>
+              <p className="text-xs text-muted">لم تضف أي شيء بعد</p>
             )}
 
             <AnimatePresence mode="popLayout">
@@ -350,7 +352,7 @@ export default function Order() {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => decreaseQuantity(item._id)}
-                      className="w-6 h-6 bg-[#222] rounded-full text-xs hover:bg-[#333] transition"
+                      className="w-6 h-6 bg-border text-text rounded-full text-xs hover:bg-muted/40 transition"
                       disabled={isSubmitting}
                     >
                       -
@@ -368,7 +370,7 @@ export default function Order() {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => addToCart(item)}
-                      className="w-6 h-6 bg-primary rounded-full text-xs hover:bg-primary/80 transition"
+                      className="w-6 h-6 bg-primary text-primary-foreground rounded-full text-xs hover:bg-primary/80 transition"
                       disabled={isSubmitting}
                     >
                       +
@@ -378,7 +380,7 @@ export default function Order() {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => removeItem(item._id, item.title)}
-                      className="text-red-400 text-xs hover:text-red-300 transition w-6"
+                      className="text-red-500 dark:text-red-400 text-xs hover:text-red-600 dark:hover:text-red-300 transition w-6"
                     >
                       ✕
                     </motion.button>
@@ -393,7 +395,7 @@ export default function Order() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <hr className="border-white/10" />
+                <hr className="border-border" />
                 <div className="flex justify-between text-xs mt-3">
                   <span>مجموع الأطباق</span>
                   <span>{itemsPrice} دج</span>
@@ -402,7 +404,7 @@ export default function Order() {
                   <span>سعر التوصيل</span>
                   <span>{shipping} دج</span>
                 </div>
-                <div className="flex justify-between font-heading text-primary text-sm pt-2 mt-2 border-t border-white/10">
+                <div className="flex justify-between font-heading text-primary text-sm pt-2 mt-2 border-t border-border">
                   <span>الإجمالي</span>
                   <span>{totalPrice} دج</span>
                 </div>
@@ -417,7 +419,7 @@ export default function Order() {
             whileHover="hover"
             whileTap="tap"
             disabled={isSubmitting || cart.length === 0}
-            className="w-full bg-secondary text-black py-2.5 rounded-xl text-sm font-semibold hover:bg-secondary/80 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-secondary text-secondary-foreground py-2.5 rounded-xl text-sm font-semibold hover:bg-secondary/80 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? "جاري التحويل..." : "تأكيد الطلب"}
           </motion.button>

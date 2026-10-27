@@ -1,6 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Tajawal:wght@200;300;400;500;700;800;900&display=swap");
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-primary: hsl(180 83% 25%);
   --color-primary-foreground: hsl(0 0% 100%);
@@ -22,10 +24,32 @@
   --font-body: "Tajawal", sans-serif;
 }
 
+/* Dark mode overrides for the same tokens */
+.dark {
+  color-scheme: dark;
+
+  --color-primary: hsl(180 70% 45%);
+  --color-primary-foreground: hsl(0 0% 100%);
+
+  --color-secondary: hsl(25 95% 60%);
+  --color-secondary-foreground: hsl(0 0% 100%);
+
+  --color-background: hsl(220 15% 8%);
+  --color-surface: hsl(220 12% 13%);
+
+  --color-text: hsl(30 15% 95%);
+  --color-muted: hsl(30 10% 65%);
+
+  --color-border: hsl(220 10% 22%);
+
+  --color-accent: hsl(45 85% 60%);
+}
+
 body {
   font-family: var(--font-body);
   color: var(--color-text);
-  background-color: hsl(0, 0%, 0%);
+  background-color: var(--color-background);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 h1,
@@ -58,4 +82,5 @@ h6 {
 
 html {
   scroll-behavior: smooth;
+  color-scheme: light;
 }

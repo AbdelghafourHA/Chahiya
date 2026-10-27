@@ -1,7 +1,8 @@
 // sections/ManageProducts.jsx
 import { useState, useEffect } from "react";
 import useFood from "../stores/food.store";
-import EditProductModal from "./EditProductModal";
+import useCategory from "../stores/category.store";
+import EditProductModal from "../sections/EditProductModal";
 import toast from "react-hot-toast";
 
 export default function ManageProducts() {
@@ -15,6 +16,8 @@ export default function ManageProducts() {
     removeDiscountFromCategory,
     removeDiscountFromAll,
   } = useFood();
+
+  const { categories, fetchCategories } = useCategory();
 
   const [foods, setFoods] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,16 +33,21 @@ export default function ManageProducts() {
   });
 
   const [categoryDiscount, setCategoryDiscount] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("pizza");
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [allDiscount, setAllDiscount] = useState("");
   const [isApplyingDiscount, setIsApplyingDiscount] = useState(false);
 
-  const categories = [
-    { value: "pizza", label: "بيتزا", emoji: "🍕" },
-    { value: "tacos", label: "تاكوس", emoji: "🌮" },
-    { value: "burger", label: "برغر", emoji: "🍔" },
-    { value: "drink", label: "مشروبات", emoji: "🥤" },
-  ];
+  // Load categories once
+  useEffect(() => {
+    fetchCategories(false);
+  }, [fetchCategories]);
+
+  // Default selected category to first
+  useEffect(() => {
+    if (!selectedCategory && categories.length > 0) {
+      setSelectedCategory(categories[0].slug);
+    }
+  }, [categories, selectedCategory]);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -54,10 +62,16 @@ export default function ManageProducts() {
     loadProducts();
   }, [currentPage, fetchAllFoods]);
 
+  // Helper: display category slug as "emoji name"
+  const categoryLabel = (slug) => {
+    if (!slug) return "بدون قسم";
+    const cat = categories.find((c) => c.slug === slug);
+    return cat ? `${cat.emoji} ${cat.name}` : slug;
+  };
+
   const handleEditProduct = async (id, formData) => {
     const result = await editFood(id, formData);
     if (result && result.success) {
-      // Update the local state immediately
       setFoods(foods.map((food) => (food._id === id ? result.food : food)));
       toast.success("تم تحديث المنتج بنجاح");
     }
@@ -67,9 +81,7 @@ export default function ManageProducts() {
   const handleDelete = async (id, title) => {
     if (window.confirm(`هل أنت متأكد من حذف "${title}"؟`)) {
       const result = await removeFood(id);
-      if (result.success) {
-        setFoods(foods.filter((f) => f._id !== id));
-      }
+      if (result.success) setFoods(foods.filter((f) => f._id !== id));
     }
   };
 
@@ -80,11 +92,13 @@ export default function ManageProducts() {
     }
   };
 
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-  };
+  const handlePageChange = (newPage) => setCurrentPage(newPage);
 
   const handleCategoryDiscount = async () => {
+    if (!selectedCategory) {
+      toast.error("الرجاء اختيار قسم");
+      return;
+    }
     if (!categoryDiscount || categoryDiscount < 0 || categoryDiscount > 100) {
       toast.error("الرجاء إدخال نسبة خصم صحيحة بين 0 و 100");
       return;
@@ -107,6 +121,10 @@ export default function ManageProducts() {
   };
 
   const handleRemoveCategoryDiscount = async () => {
+    if (!selectedCategory) {
+      toast.error("الرجاء اختيار قسم");
+      return;
+    }
     setIsApplyingDiscount(true);
     const result = await removeDiscountFromCategory(selectedCategory);
     if (result.success) {
@@ -137,9 +155,7 @@ export default function ManageProducts() {
   const handleRemoveAllDiscount = async () => {
     setIsApplyingDiscount(true);
     const result = await removeDiscountFromAll();
-    if (result.success) {
-      setFoods(result.foods);
-    }
+    if (result.success) setFoods(result.foods);
     setIsApplyingDiscount(false);
   };
 
@@ -149,16 +165,16 @@ export default function ManageProducts() {
         {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}
-            className="bg-[#161616] p-3 rounded-2xl flex items-center gap-3 animate-pulse"
+            className="bg-surface border border-border p-3 rounded-2xl flex items-center gap-3 animate-pulse"
           >
-            <div className="w-14 h-14 rounded-xl bg-[#222]"></div>
+            <div className="w-14 h-14 rounded-xl bg-border"></div>
             <div className="flex-1 space-y-2">
-              <div className="h-4 bg-[#222] rounded w-32"></div>
-              <div className="h-3 bg-[#222] rounded w-20"></div>
+              <div className="h-4 bg-border rounded w-32"></div>
+              <div className="h-3 bg-border rounded w-20"></div>
             </div>
             <div className="flex gap-2">
-              <div className="w-16 h-8 bg-[#222] rounded"></div>
-              <div className="w-16 h-8 bg-[#222] rounded"></div>
+              <div className="w-16 h-8 bg-border rounded"></div>
+              <div className="w-16 h-8 bg-border rounded"></div>
             </div>
           </div>
         ))}
@@ -168,9 +184,9 @@ export default function ManageProducts() {
 
   if (foods.length === 0 && !loading) {
     return (
-      <div className="bg-[#161616] p-8 rounded-2xl text-center">
-        <p className="text-white/60">لا توجد منتجات</p>
-        <p className="text-sm text-white/40 mt-2">
+      <div className="bg-surface border border-border p-8 rounded-2xl text-center">
+        <p className="text-muted">لا توجد منتجات</p>
+        <p className="text-sm text-muted mt-2">
           أضف منتجك الأول من تبويب "إضافة"
         </p>
       </div>
@@ -179,20 +195,25 @@ export default function ManageProducts() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-[#161616] p-4 rounded-2xl space-y-4">
+      <div className="bg-surface border border-border p-4 rounded-2xl space-y-4">
         <h3 className="text-lg font-bold mb-3">إدارة الخصومات</h3>
-        <div className="border-b border-white/10 pb-4">
-          <p className="text-sm text-white/60 mb-3">خصم حسب القسم</p>
+
+        <div className="border-b border-border pb-4">
+          <p className="text-sm text-muted mb-3">خصم حسب القسم</p>
           <div className="flex flex-wrap gap-3">
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="bg-[#111] px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              className="bg-background border border-border text-text px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               disabled={isApplyingDiscount}
             >
+              {categories.length === 0 && (
+                <option value="">لا توجد أقسام</option>
+              )}
               {categories.map((cat) => (
-                <option key={cat.value} value={cat.value}>
-                  {cat.emoji} {cat.label}
+                <option key={cat._id} value={cat.slug}>
+                  {cat.emoji} {cat.name}
+                  {!cat.isActive ? " (غير مفعل)" : ""}
                 </option>
               ))}
             </select>
@@ -201,7 +222,7 @@ export default function ManageProducts() {
               placeholder="نسبة الخصم %"
               value={categoryDiscount}
               onChange={(e) => setCategoryDiscount(e.target.value)}
-              className="bg-[#111] px-3 py-2 rounded-lg text-sm w-32 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="bg-background border border-border text-text placeholder:text-muted px-3 py-2 rounded-lg text-sm w-32 focus:outline-none focus:ring-2 focus:ring-primary"
               disabled={isApplyingDiscount}
               min="0"
               max="100"
@@ -209,28 +230,29 @@ export default function ManageProducts() {
             <button
               onClick={handleCategoryDiscount}
               disabled={isApplyingDiscount || !categoryDiscount}
-              className="bg-primary px-4 py-2 rounded-lg text-sm hover:bg-primary/80 transition disabled:opacity-50"
+              className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm hover:bg-primary/80 transition disabled:opacity-50"
             >
               تطبيق الخصم
             </button>
             <button
               onClick={handleRemoveCategoryDiscount}
               disabled={isApplyingDiscount}
-              className="bg-red-500/20 text-red-400 px-4 py-2 rounded-lg text-sm hover:bg-red-500/30 transition disabled:opacity-50"
+              className="bg-red-500/20 text-red-500 dark:text-red-400 px-4 py-2 rounded-lg text-sm hover:bg-red-500/30 transition disabled:opacity-50"
             >
               إزالة الخصم
             </button>
           </div>
         </div>
+
         <div>
-          <p className="text-sm text-white/60 mb-3">خصم على جميع المنتجات</p>
+          <p className="text-sm text-muted mb-3">خصم على جميع المنتجات</p>
           <div className="flex flex-wrap gap-3">
             <input
               type="number"
               placeholder="نسبة الخصم %"
               value={allDiscount}
               onChange={(e) => setAllDiscount(e.target.value)}
-              className="bg-[#111] px-3 py-2 rounded-lg text-sm w-32 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="bg-background border border-border text-text placeholder:text-muted px-3 py-2 rounded-lg text-sm w-32 focus:outline-none focus:ring-2 focus:ring-primary"
               disabled={isApplyingDiscount}
               min="0"
               max="100"
@@ -238,14 +260,14 @@ export default function ManageProducts() {
             <button
               onClick={handleAllDiscount}
               disabled={isApplyingDiscount || !allDiscount}
-              className="bg-primary px-4 py-2 rounded-lg text-sm hover:bg-primary/80 transition disabled:opacity-50"
+              className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm hover:bg-primary/80 transition disabled:opacity-50"
             >
               تطبيق الخصم على الكل
             </button>
             <button
               onClick={handleRemoveAllDiscount}
               disabled={isApplyingDiscount}
-              className="bg-red-500/20 text-red-400 px-4 py-2 rounded-lg text-sm hover:bg-red-500/30 transition disabled:opacity-50"
+              className="bg-red-500/20 text-red-500 dark:text-red-400 px-4 py-2 rounded-lg text-sm hover:bg-red-500/30 transition disabled:opacity-50"
             >
               إزالة الخصم من الكل
             </button>
@@ -257,7 +279,7 @@ export default function ManageProducts() {
         {foods.map((product) => (
           <div
             key={product._id}
-            className={`bg-[#161616] p-3 rounded-2xl flex items-center gap-3 transition ${
+            className={`bg-surface border border-border p-3 rounded-2xl flex items-center gap-3 transition ${
               !product.isAvailable ? "opacity-50" : ""
             }`}
           >
@@ -270,12 +292,12 @@ export default function ManageProducts() {
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-sm font-medium">{product.title}</p>
                 {!product.isAvailable && (
-                  <span className="text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded">
+                  <span className="text-xs bg-red-500/20 text-red-500 dark:text-red-400 px-2 py-0.5 rounded">
                     غير متوفر
                   </span>
                 )}
                 {product.discount > 0 && (
-                  <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded">
+                  <span className="text-xs bg-green-500/20 text-green-600 dark:text-green-400 px-2 py-0.5 rounded">
                     خصم {product.discount}%
                   </span>
                 )}
@@ -283,7 +305,7 @@ export default function ManageProducts() {
               <div className="flex items-center gap-2">
                 {product.discount > 0 ? (
                   <>
-                    <p className="text-xs text-white/40 line-through">
+                    <p className="text-xs text-muted line-through">
                       {product.price} دج
                     </p>
                     <p className="text-xs text-primary font-semibold">
@@ -296,7 +318,9 @@ export default function ManageProducts() {
                 ) : (
                   <p className="text-xs text-primary">{product.price} دج</p>
                 )}
-                <p className="text-xs text-white/40">• {product.category}</p>
+                <p className="text-xs text-muted">
+                  • {categoryLabel(product.category)}
+                </p>
               </div>
             </div>
             <div className="flex flex-col gap-1 text-xs">
@@ -304,21 +328,21 @@ export default function ManageProducts() {
                 onClick={() => handleToggleAvailability(product._id)}
                 className={`px-2 py-1 rounded transition ${
                   product.isAvailable
-                    ? "bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30"
-                    : "bg-green-500/20 text-green-400 hover:bg-green-500/30"
+                    ? "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-500/30"
+                    : "bg-green-500/20 text-green-600 dark:text-green-400 hover:bg-green-500/30"
                 }`}
               >
                 {product.isAvailable ? "تعطيل" : "تفعيل"}
               </button>
               <button
                 onClick={() => setEditingProduct(product)}
-                className="bg-[#222] px-2 py-1 rounded hover:bg-[#333] transition"
+                className="bg-border text-text px-2 py-1 rounded hover:bg-muted/30 transition"
               >
                 تعديل
               </button>
               <button
                 onClick={() => handleDelete(product._id, product.title)}
-                className="bg-red-500/20 text-red-400 px-2 py-1 rounded hover:bg-red-500/30 transition"
+                className="bg-red-500/20 text-red-500 dark:text-red-400 px-2 py-1 rounded hover:bg-red-500/30 transition"
               >
                 حذف
               </button>
@@ -332,17 +356,17 @@ export default function ManageProducts() {
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={!productsPagination.hasPrevPage}
-            className="px-3 py-1 bg-[#161616] rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#222] transition"
+            className="px-3 py-1 bg-surface border border-border text-text rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-border transition"
           >
             السابق
           </button>
-          <span className="px-3 py-1 bg-primary rounded-lg text-sm">
+          <span className="px-3 py-1 bg-primary text-primary-foreground rounded-lg text-sm">
             {productsPagination.currentPage} / {productsPagination.totalPages}
           </span>
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={!productsPagination.hasNextPage}
-            className="px-3 py-1 bg-[#161616] rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#222] transition"
+            className="px-3 py-1 bg-surface border border-border text-text rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-border transition"
           >
             التالي
           </button>

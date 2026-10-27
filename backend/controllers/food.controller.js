@@ -43,20 +43,13 @@ export const getAllFoods = async (req, res) => {
 };
 
 // Get foods by category with pagination
+// ✏️ Removed hardcoded validCategories check — DB decides what exists
 export const getFoodsByCategory = async (req, res) => {
   try {
     const { category } = req.params;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
-
-    const validCategories = ["pizza", "tacos", "burger", "drink"];
-    if (!validCategories.includes(category)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid category",
-      });
-    }
 
     const filter = { category, isAvailable: true };
 
@@ -333,6 +326,7 @@ export const discountToSingleFood = async (req, res) => {
 };
 
 // Apply discount to entire category
+// ✏️ Removed hardcoded validCategories check
 export const discountToCategory = async (req, res) => {
   try {
     const { category } = req.params;
@@ -342,14 +336,6 @@ export const discountToCategory = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Discount must be between 0 and 100",
-      });
-    }
-
-    const validCategories = ["pizza", "tacos", "burger", "drink"];
-    if (!validCategories.includes(category)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid category",
       });
     }
 
@@ -436,17 +422,10 @@ export const removeDiscountFromSingle = async (req, res) => {
 };
 
 // Remove discount from entire category
+// ✏️ Removed hardcoded validCategories check
 export const removeDiscountFromCategory = async (req, res) => {
   try {
     const { category } = req.params;
-
-    const validCategories = ["pizza", "tacos", "burger", "drink"];
-    if (!validCategories.includes(category)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid category",
-      });
-    }
 
     const result = await Food.updateMany({ category }, { discount: 0 });
     const updatedFoods = await Food.find({ category });

@@ -14,7 +14,6 @@ export default function Hero() {
   const opacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.2]);
 
-  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -82,9 +81,9 @@ export default function Hero() {
         }}
       />
 
-      {/* Overlay */}
+      {/* Overlay — slightly stronger in dark mode for readability */}
       <motion.div
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/50 dark:bg-black/65"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
@@ -109,7 +108,7 @@ export default function Hero() {
           <motion.div
             variants={cardVariants}
             whileHover={{ y: -5, transition: { duration: 0.2 } }}
-            className="flex flex-col items-center p-6 rounded-2xl bg-white/5 backdrop-blur-xs hover:bg-white/10 transition-all duration-300"
+            className="flex flex-col items-center p-6 rounded-2xl bg-white/5 backdrop-blur-xs hover:bg-white/10 border border-white/10 transition-all duration-300"
           >
             <motion.div
               whileHover={{ rotate: 360, scale: 1.1 }}
@@ -129,7 +128,7 @@ export default function Hero() {
               href="#contact"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="border border-primary-foreground/40 px-5 py-2 rounded-full text-sm hover:bg-primary-foreground hover:text-text transition cursor-pointer inline-block"
+              className="border border-primary-foreground/40 px-5 py-2 rounded-full text-sm hover:bg-primary-foreground hover:text-background transition cursor-pointer inline-block"
             >
               تواصل معنا
             </motion.a>
@@ -139,7 +138,7 @@ export default function Hero() {
           <motion.div
             variants={cardVariants}
             whileHover={{ y: -5, transition: { duration: 0.2 } }}
-            className="flex flex-col items-center p-6 rounded-2xl bg-white/5 backdrop-blur-xs hover:bg-white/10 transition-all duration-300"
+            className="flex flex-col items-center p-6 rounded-2xl bg-white/5 backdrop-blur-xs hover:bg-white/10 border border-white/10 transition-all duration-300"
           >
             <motion.div
               whileHover={{ rotate: 360, scale: 1.1 }}

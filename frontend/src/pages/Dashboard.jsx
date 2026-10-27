@@ -1,12 +1,14 @@
-// pages/Dashboard.jsx (Simple version without icons)
+// pages/Dashboard.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ManageProducts from "../sections/ManageProducts";
 import AddProduct from "../sections/AddProduct";
 import Locations from "../sections/Locations";
-import Orders from "../sections/Orders";
+import Categories from "../sections/Categories";
+// import Orders from "../sections/Orders";
 import useFood from "../stores/food.store";
 import useAuth from "../stores/auth.store";
+import ThemeToggle from "../components/ThemeToggle.jsx";
 
 export default function Dashboard() {
   const [tab, setTab] = useState("products");
@@ -19,11 +21,11 @@ export default function Dashboard() {
   const tabs = [
     { id: "products", name: "المنتجات" },
     { id: "add", name: "إضافة منتج" },
+    { id: "categories", name: "الأقسام" },
     { id: "locations", name: "مواقع التوصيل" },
-    { id: "orders", name: "الطلبات" },
+    // { id: "orders", name: "الطلبات" },
   ];
 
-  // Check authentication on mount
   useEffect(() => {
     const initAuth = async () => {
       await checkAuth();
@@ -32,14 +34,12 @@ export default function Dashboard() {
     initAuth();
   }, [checkAuth]);
 
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       navigate("/login");
     }
   }, [isLoading, isAuthenticated, navigate]);
 
-  // Refresh products when switching to products tab (only if authenticated)
   useEffect(() => {
     if (!isLoading && isAuthenticated && tab === "products") {
       fetchAllFoods(1, 10);
@@ -57,45 +57,46 @@ export default function Dashboard() {
     navigate("/login");
   };
 
-  // Show loading while checking auth
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0f0f0f] flex items-center justify-center">
-        <div className="text-white text-center">
+      <div className="min-h-screen bg-background flex items-center justify-center transition-colors duration-300">
+        <div className="text-text text-center">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white/60">جاري التحقق...</p>
+          <p className="text-muted">جاري التحقق...</p>
         </div>
       </div>
     );
   }
 
-  // If not authenticated, don't render dashboard (will redirect)
   if (!isAuthenticated) {
     return null;
   }
 
   return (
-    <section className="min-h-screen bg-[#0f0f0f] text-white py-6">
+    <section className="min-h-screen bg-background text-text py-6 transition-colors duration-300">
       <div className="container max-w-6xl mx-auto px-4 space-y-6">
-        {/* Header with Logout Button */}
-        <div className="flex justify-between items-center">
-          <div className="flex-1">
+        {/* Header with Toggle + Logout */}
+        <div className="flex justify-between items-center gap-3 flex-col md:flex-row">
+          <div className="">
             <h1 className="text-center font-heading text-2xl font-bold">
               لوحة التحكم
             </h1>
             {user && (
-              <p className="text-center text-white/40 text-sm mt-1">
+              <p className="text-center text-muted text-sm mt-1">
                 مرحباً, {user.fullName || user.email}
               </p>
             )}
           </div>
-          <button
-            onClick={handleLogout}
-            disabled={isLoggingOut}
-            className="bg-red-500/20 hover:bg-red-500/30 text-red-400 px-4 py-2 rounded-xl transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoggingOut ? "جاري الخروج..." : "تسجيل الخروج"}
-          </button>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <button
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className="bg-red-500/20 hover:bg-red-500/30 text-red-500 dark:text-red-400 px-4 py-2 rounded-xl transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoggingOut ? "جاري الخروج..." : "تسجيل الخروج"}
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -104,12 +105,11 @@ export default function Dashboard() {
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`text-sm px-6 py-2 rounded-full whitespace-nowrap transition-all duration-200
-                ${
-                  tab === t.id
-                    ? "bg-primary text-white"
-                    : "bg-[#161616] text-white/60 hover:bg-[#202020] hover:text-white/80"
-                }`}
+              className={`text-sm px-6 py-2 rounded-full whitespace-nowrap transition-all duration-200 border ${
+                tab === t.id
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-surface text-muted border-border hover:bg-border hover:text-text"
+              }`}
             >
               {t.name}
             </button>
@@ -120,8 +120,9 @@ export default function Dashboard() {
         <div className="mt-6">
           {tab === "products" && <ManageProducts />}
           {tab === "add" && <AddProduct onSuccess={handleProductAdded} />}
+          {tab === "categories" && <Categories />}
           {tab === "locations" && <Locations />}
-          {tab === "orders" && <Orders />}
+          {/* {tab === "orders" && <Orders />} */}
         </div>
       </div>
     </section>
