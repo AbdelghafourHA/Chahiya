@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html>
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
@@ -8,14 +8,35 @@
     <script>
       (function () {
         try {
-          var stored = localStorage.getItem("theme");
+          // 1. Handle Dark Mode
+          var storedTheme = localStorage.getItem("theme");
           var prefersDark = window.matchMedia(
             "(prefers-color-scheme: dark)"
           ).matches;
-          if (stored === "dark" || (!stored && prefersDark)) {
+          if (storedTheme === "dark" || (!storedTheme && prefersDark)) {
             document.documentElement.classList.add("dark");
           }
-        } catch (e) {}
+
+          // 2. Handle Language & Direction (RTL / LTR)
+          // i18next-browser-languagedetector uses "i18nextLng" as the default key
+          var storedLang = localStorage.getItem("i18nextLng");
+          var browserLang = navigator.language.split("-")[0];
+
+          // Determine which language to use (saved or browser's, fallback to Arabic)
+          var currentLang = storedLang || browserLang || "ar";
+
+          // Set the dir attribute based on the language
+          if (currentLang === "ar") {
+            document.documentElement.dir = "rtl";
+            document.documentElement.lang = "ar";
+          } else {
+            document.documentElement.dir = "ltr";
+            document.documentElement.lang = currentLang; // "fr" or "en"
+          }
+        } catch (e) {
+          // Fallback in case of errors
+          document.documentElement.dir = "rtl";
+        }
       })();
     </script>
   </head>
