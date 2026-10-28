@@ -48,7 +48,6 @@ const paginationVariants = {
 /*                        Inline skeletons (RTL aware)                        */
 /* -------------------------------------------------------------------------- */
 
-/** Category pill skeleton — same shape as the real pills */
 function CategorySkeleton({ count = 5 }) {
   return (
     <div className="flex md:flex-col gap-3 flex-wrap max-md:justify-center">
@@ -63,7 +62,6 @@ function CategorySkeleton({ count = 5 }) {
   );
 }
 
-/** Food card skeleton — same shape as the real cards */
 function FoodCardSkeleton({ count = 6 }) {
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -108,7 +106,7 @@ export default function Menu() {
 
   const itemsPerPage = 6;
 
-  // Load categories ONCE at mount
+  // Fetch categories ONCE at mount
   const categoriesFetchedRef = useRef(false);
   useEffect(() => {
     if (categoriesFetchedRef.current) return;
@@ -116,7 +114,7 @@ export default function Menu() {
     fetchCategories(true);
   }, [fetchCategories]);
 
-  // Load foods on tab or page change
+  // Fetch foods on tab or page change
   useEffect(() => {
     let cancelled = false;
     const loadFoods = async () => {
@@ -155,7 +153,6 @@ export default function Menu() {
           (food) => food.category === active && food.isAvailable === true
         );
 
-  // Tabs: "الكل" + dynamic categories
   const tabs = [
     { id: "all", name: "الكل", emoji: "📋" },
     ...dynamicCategories.map((c) => ({
@@ -165,7 +162,7 @@ export default function Menu() {
     })),
   ];
 
-  // Full-screen skeleton ONLY on first-ever load (categories not yet in store)
+  // Full skeleton only on first-ever load (before categories have arrived)
   const isFirstLoad = dynamicCategories.length === 0 && foodsLoading;
 
   if (isFirstLoad) {
@@ -229,15 +226,19 @@ export default function Menu() {
 
           {/* Food Items Grid */}
           <motion.div variants={containerVariants}>
-            {/* Only the product area shows a loading state on tab change */}
-            {foodsLoading ? (
-              <FoodCardSkeleton />
-            ) : displayFoods.length === 0 ? (
+            {/* Empty state only when NOT loading and genuinely empty */}
+            {!foodsLoading && displayFoods.length === 0 ? (
               <motion.div variants={itemVariants} className="text-center py-12">
                 <p className="text-muted">لا توجد منتجات في هذا القسم</p>
               </motion.div>
             ) : (
-              <>
+              <div
+                className={`transition-opacity duration-300 ${
+                  foodsLoading
+                    ? "opacity-40 pointer-events-none select-none"
+                    : "opacity-100"
+                }`}
+              >
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={active + currentPage}
@@ -324,8 +325,8 @@ export default function Menu() {
                   </motion.div>
                 </AnimatePresence>
 
-                {/* Pagination */}
-                {menuPagination.totalPages > 1 && (
+                {/* Pagination — hidden while loading to avoid jumping */}
+                {!foodsLoading && menuPagination.totalPages > 1 && (
                   <motion.div
                     variants={paginationVariants}
                     initial="hidden"
@@ -384,7 +385,7 @@ export default function Menu() {
                     </button>
                   </motion.div>
                 )}
-              </>
+              </div>
             )}
           </motion.div>
         </div>
