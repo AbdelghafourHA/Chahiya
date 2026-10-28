@@ -24,7 +24,7 @@ import {
 /*                              Env config                                    */
 /* -------------------------------------------------------------------------- */
 const RESTAURANT_WHATSAPP =
-  import.meta.env.VITE_RESTAURANT_WHATSAPP || "213698055344";
+  import.meta.env.VITE_RESTAURANT_WHATSAPP || "213551748269";
 const PREP_TIME_MIN = parseInt(import.meta.env.VITE_ESTIMATED_PREP_TIME) || 30;
 
 const CART_STORAGE_KEY = "chahiya_order_cart_v1";
