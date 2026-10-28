@@ -238,7 +238,32 @@
       "cancel": "Cancel",
       "save": "Save Changes",
       "saving": "Saving..."
-    }
+    },
+    "foodAdded": "Product added successfully",
+    "foodAddError": "Failed to add product",
+    "foodUpdated": "Product updated successfully",
+    "foodUpdateError": "Failed to update product",
+    "foodDeleted": "Product deleted successfully",
+    "foodDeleteError": "Failed to delete product",
+    "foodFetchError": "Failed to fetch products",
+    "foodToggledAvailable": "Product is available",
+    "foodToggledUnavailable": "Product is unavailable",
+    "foodToggleError": "Failed to toggle product status",
+    "discountApplied": "Discount applied successfully",
+    "discountCategoryApplied": "Discount applied to category",
+    "discountAllApplied": "Discount applied to all products",
+    "discountError": "Failed to apply discount",
+    "discountRemoved": "Discount removed successfully",
+    "discountCategoryRemoved": "Discount removed from category",
+    "discountAllRemoved": "Discount removed from all products",
+    "discountRemoveError": "Failed to remove discount",
+    "locationFetchError": "Failed to fetch locations",
+    "locationAdded": "Location added successfully!",
+    "locationAddError": "Failed to add location",
+    "locationUpdated": "Location updated successfully!",
+    "locationUpdateError": "Failed to update location",
+    "locationDeleted": "Location deleted successfully!",
+    "locationDeleteError": "Failed to delete location"
   },
   "login": {
     "welcome": "Welcome",
@@ -249,6 +274,10 @@
     "loggingIn": "Logging in...",
     "verify": "Verifying...",
     "emailRequired": "Email is required",
-    "passwordRequired": "Password is required"
+    "passwordRequired": "Password is required",
+    "success": "Logged in successfully!",
+    "error": "Login error!",
+    "logoutSuccess": "Logged out successfully!",
+    "logoutError": "Logout error!"
   }
 }

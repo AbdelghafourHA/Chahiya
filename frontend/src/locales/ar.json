@@ -238,7 +238,32 @@
       "cancel": "إلغاء",
       "save": "حفظ التغييرات",
       "saving": "جاري الحفظ..."
-    }
+    },
+    "foodAdded": "تم إضافة المنتج بنجاح",
+    "foodAddError": "فشل في إضافة المنتج",
+    "foodUpdated": "تم تحديث المنتج بنجاح",
+    "foodUpdateError": "فشل في تحديث المنتج",
+    "foodDeleted": "تم حذف المنتج بنجاح",
+    "foodDeleteError": "فشل في حذف المنتج",
+    "foodFetchError": "فشل في جلب المنتجات",
+    "foodToggledAvailable": "المنتج متاح",
+    "foodToggledUnavailable": "المنتج غير متاح",
+    "foodToggleError": "فشل في تغيير حالة المنتج",
+    "discountApplied": "تم تطبيق الخصم بنجاح",
+    "discountCategoryApplied": "تم تطبيق الخصم على القسم",
+    "discountAllApplied": "تم تطبيق الخصم على الكل",
+    "discountError": "فشل في تطبيق الخصم",
+    "discountRemoved": "تم إزالة الخصم بنجاح",
+    "discountCategoryRemoved": "تم إزالة الخصم من القسم",
+    "discountAllRemoved": "تم إزالة الخصم من الكل",
+    "discountRemoveError": "فشل في إزالة الخصم",
+    "locationFetchError": "فشل في جلب المواقع",
+    "locationAdded": "تم إضافة الموقع بنجاح!",
+    "locationAddError": "فشل في إضافة الموقع",
+    "locationUpdated": "تم تحديث الموقع بنجاح!",
+    "locationUpdateError": "فشل في تحديث الموقع",
+    "locationDeleted": "تم حذف الموقع بنجاح!",
+    "locationDeleteError": "فشل في حذف الموقع"
   },
   "login": {
     "welcome": "مرحباً بك",
@@ -249,6 +274,10 @@
     "loggingIn": "جاري تسجيل الدخول...",
     "verify": "جاري التحقق...",
     "emailRequired": "البريد الإلكتروني مطلوب",
-    "passwordRequired": "كلمة المرور مطلوبة"
+    "passwordRequired": "كلمة المرور مطلوبة",
+    "success": "تم تسجيل الدخول بنجاح!",
+    "error": "خطأ في تسجيل الدخول!",
+    "logoutSuccess": "تم تسجيل الخروج بنجاح!",
+    "logoutError": "خطأ في تسجيل الخروج!"
   }
 }

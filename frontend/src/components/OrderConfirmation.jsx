@@ -78,10 +78,7 @@ export default function OrderConfirmation({
         <summary className="cursor-pointer text-muted hover:text-text">
           {t("order.previewMsg", "معاينة الرسالة المُرسلة")}
         </summary>
-        <pre
-          dir="rtl"
-          className="mt-2 whitespace-pre-wrap bg-background border border-border rounded-xl p-3 text-text font-body max-h-72 overflow-auto"
-        >
+        <pre className="mt-2 whitespace-pre-wrap bg-background border border-border rounded-xl p-3 text-text font-body max-h-72 overflow-auto">
           {message}
         </pre>
       </details>

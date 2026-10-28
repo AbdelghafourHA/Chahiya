@@ -2,13 +2,13 @@
 import { create } from "zustand";
 import api from "../api/axios";
 import { toast } from "react-hot-toast";
+import i18n from "../i18n"; // 👈 Imported
 
 const useLocation = create((set, get) => ({
   locations: [],
   loading: false,
   error: null,
 
-  // Fetch all locations
   fetchAllLocations: async () => {
     try {
       set({ loading: true, error: null });
@@ -21,13 +21,13 @@ const useLocation = create((set, get) => ({
     } catch (error) {
       console.error("Fetch locations error:", error);
       const message =
-        error.response?.data?.message || "Failed to fetch locations";
+        error.response?.data?.message ||
+        i18n.t("admin.locationFetchError", "Failed to fetch locations");
       set({ error: message, loading: false });
       toast.error(message);
     }
   },
 
-  // Add new location
   addLocation: async (locationData) => {
     try {
       set({ loading: true, error: null });
@@ -38,18 +38,19 @@ const useLocation = create((set, get) => ({
         loading: false,
       }));
 
-      toast.success("تم إضافة الموقع بنجاح!");
+      toast.success(i18n.t("admin.locationAdded", "تم إضافة الموقع بنجاح!"));
       return { success: true };
     } catch (error) {
       console.error("Add location error:", error);
-      const message = error.response?.data?.message || "Failed to add location";
+      const message =
+        error.response?.data?.message ||
+        i18n.t("admin.locationAddError", "Failed to add location");
       set({ error: message, loading: false });
       toast.error(message);
       return { success: false, message };
     }
   },
 
-  // Edit location
   editLocation: async (id, locationData) => {
     try {
       set({ loading: true, error: null });
@@ -62,19 +63,19 @@ const useLocation = create((set, get) => ({
         loading: false,
       }));
 
-      toast.success("تم تحديث الموقع بنجاح!");
+      toast.success(i18n.t("admin.locationUpdated", "تم تحديث الموقع بنجاح!"));
       return { success: true };
     } catch (error) {
       console.error("Edit location error:", error);
       const message =
-        error.response?.data?.message || "Failed to update location";
+        error.response?.data?.message ||
+        i18n.t("admin.locationUpdateError", "Failed to update location");
       set({ error: message, loading: false });
       toast.error(message);
       return { success: false, message };
     }
   },
 
-  // Remove location
   removeLocation: async (id) => {
     try {
       set({ loading: true, error: null });
@@ -85,22 +86,21 @@ const useLocation = create((set, get) => ({
         loading: false,
       }));
 
-      toast.success("تم حذف الموقع بنجاح!");
+      toast.success(i18n.t("admin.locationDeleted", "تم حذف الموقع بنجاح!"));
       return { success: true };
     } catch (error) {
       console.error("Delete location error:", error);
       const message =
-        error.response?.data?.message || "Failed to delete location";
+        error.response?.data?.message ||
+        i18n.t("admin.locationDeleteError", "Failed to delete location");
       set({ error: message, loading: false });
       toast.error(message);
       return { success: false, message };
     }
   },
 
-  // Clear error
   clearError: () => set({ error: null }),
 
-  // Reset store
   resetStore: () =>
     set({
       locations: [],

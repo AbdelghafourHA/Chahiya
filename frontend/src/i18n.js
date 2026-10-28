@@ -16,9 +16,9 @@ i18n
       fr: { translation: fr },
       en: { translation: en },
     },
-    fallbackLng: "ar", // Default to Arabic
+    fallbackLng: "ar",
     interpolation: {
-      escapeValue: false, // React already escapes by default
+      escapeValue: false,
     },
     detection: {
       order: ["localStorage", "navigator"],
@@ -31,13 +31,7 @@ export const updateDirection = (lng) => {
   const dir = lng === "ar" ? "rtl" : "ltr";
   document.documentElement.dir = dir;
   document.documentElement.lang = lng;
-
-  // Also update body font family if needed
-  if (lng === "ar") {
-    document.body.style.fontFamily = "var(--font-body)"; // Tajawal/Cairo
-  } else {
-    document.body.style.fontFamily = "system-ui, -apple-system, sans-serif"; // Standard latin fonts
-  }
+  // ❌ REMOVED the document.body.style.fontFamily override
 };
 
 // Listen to language changes

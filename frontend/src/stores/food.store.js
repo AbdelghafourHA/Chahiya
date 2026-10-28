@@ -2,12 +2,12 @@
 import { create } from "zustand";
 import api from "../api/axios";
 import { toast } from "react-hot-toast";
+import i18n from "../i18n"; // 👈 Imported
 
 const useFood = create((set, get) => ({
   loading: false,
   error: null,
 
-  // Fetch all foods with pagination - returns data, doesn't store
   fetchAllFoods: async (page = 1, limit = 10, filters = {}) => {
     try {
       set({ loading: true, error: null });
@@ -21,14 +21,15 @@ const useFood = create((set, get) => ({
       };
     } catch (error) {
       console.error("Fetch foods error:", error);
-      const message = error.response?.data?.message || "Failed to fetch foods";
+      const message =
+        error.response?.data?.message ||
+        i18n.t("admin.foodFetchError", "Failed to fetch foods");
       set({ loading: false, error: message });
       toast.error(message);
       return { success: false, message };
     }
   },
 
-  // Fetch foods by category - returns data, doesn't store
   fetchFoodsByCategory: async (category, page = 1, limit = 10) => {
     try {
       set({ loading: true, error: null });
@@ -43,14 +44,14 @@ const useFood = create((set, get) => ({
     } catch (error) {
       console.error("Fetch foods by category error:", error);
       const message =
-        error.response?.data?.message || "Failed to fetch foods by category";
+        error.response?.data?.message ||
+        i18n.t("admin.foodFetchError", "Failed to fetch foods");
       set({ loading: false, error: message });
       toast.error(message);
       return { success: false, message };
     }
   },
 
-  // Fetch single food
   fetchFoodById: async (id) => {
     try {
       set({ loading: true, error: null });
@@ -59,14 +60,15 @@ const useFood = create((set, get) => ({
       return { success: true, food: response.data.food };
     } catch (error) {
       console.error("Fetch food error:", error);
-      const message = error.response?.data?.message || "Failed to fetch food";
+      const message =
+        error.response?.data?.message ||
+        i18n.t("admin.foodFetchError", "Failed to fetch food");
       set({ loading: false, error: message });
       toast.error(message);
       return { success: false, message };
     }
   },
 
-  // Add new food
   addFood: async (formData) => {
     try {
       set({ loading: true, error: null });
@@ -74,18 +76,19 @@ const useFood = create((set, get) => ({
         headers: { "Content-Type": "multipart/form-data" },
       });
       set({ loading: false });
-      toast.success("تم إضافة المنتج بنجاح");
+      toast.success(i18n.t("admin.foodAdded", "تم إضافة المنتج بنجاح"));
       return { success: true, food: response.data.food };
     } catch (error) {
       console.error("Add food error:", error);
-      const message = error.response?.data?.message || "Failed to add food";
+      const message =
+        error.response?.data?.message ||
+        i18n.t("admin.foodAddError", "Failed to add food");
       set({ loading: false, error: message });
       toast.error(message);
       return { success: false, message };
     }
   },
 
-  // Edit food
   editFood: async (id, formData) => {
     try {
       set({ loading: true, error: null });
@@ -93,35 +96,37 @@ const useFood = create((set, get) => ({
         headers: { "Content-Type": "multipart/form-data" },
       });
       set({ loading: false });
-      toast.success("تم تحديث المنتج بنجاح");
+      toast.success(i18n.t("admin.foodUpdated", "تم تحديث المنتج بنجاح"));
       return { success: true, food: response.data.food };
     } catch (error) {
       console.error("Edit food error:", error);
-      const message = error.response?.data?.message || "Failed to update food";
+      const message =
+        error.response?.data?.message ||
+        i18n.t("admin.foodUpdateError", "Failed to update food");
       set({ loading: false, error: message });
       toast.error(message);
       return { success: false, message };
     }
   },
 
-  // Remove food
   removeFood: async (id) => {
     try {
       set({ loading: true, error: null });
       await api.delete(`/food/${id}`);
       set({ loading: false });
-      toast.success("تم حذف المنتج بنجاح");
+      toast.success(i18n.t("admin.foodDeleted", "تم حذف المنتج بنجاح"));
       return { success: true };
     } catch (error) {
       console.error("Delete food error:", error);
-      const message = error.response?.data?.message || "Failed to delete food";
+      const message =
+        error.response?.data?.message ||
+        i18n.t("admin.foodDeleteError", "Failed to delete food");
       set({ loading: false, error: message });
       toast.error(message);
       return { success: false, message };
     }
   },
 
-  // Apply discount to single food
   applyDiscountToSingle: async (id, discount) => {
     try {
       set({ loading: true, error: null });
@@ -129,19 +134,23 @@ const useFood = create((set, get) => ({
         discount,
       });
       set({ loading: false });
-      toast.success(`تم تطبيق خصم ${discount}% بنجاح`);
+      toast.success(
+        i18n.t("admin.discountApplied", `تم تطبيق خصم ${discount}% بنجاح`, {
+          discount,
+        })
+      );
       return { success: true, food: response.data.food };
     } catch (error) {
       console.error("Apply discount error:", error);
       const message =
-        error.response?.data?.message || "Failed to apply discount";
+        error.response?.data?.message ||
+        i18n.t("admin.discountError", "Failed to apply discount");
       set({ loading: false, error: message });
       toast.error(message);
       return { success: false, message };
     }
   },
 
-  // Apply discount to entire category
   applyDiscountToCategory: async (category, discount) => {
     try {
       set({ loading: true, error: null });
@@ -149,55 +158,67 @@ const useFood = create((set, get) => ({
         discount,
       });
       set({ loading: false });
-      toast.success(`تم تطبيق خصم ${discount}% على جميع منتجات ${category}`);
+      toast.success(
+        i18n.t(
+          "admin.discountCategoryApplied",
+          `تم تطبيق خصم ${discount}% على ${category}`,
+          { discount, category }
+        )
+      );
       return { success: true, foods: response.data.foods };
     } catch (error) {
       console.error("Apply category discount error:", error);
       const message =
-        error.response?.data?.message || "Failed to apply discount to category";
+        error.response?.data?.message ||
+        i18n.t("admin.discountError", "Failed to apply discount to category");
       set({ loading: false, error: message });
       toast.error(message);
       return { success: false, message };
     }
   },
 
-  // Apply discount to all foods
   applyDiscountToAll: async (discount) => {
     try {
       set({ loading: true, error: null });
       const response = await api.patch("/food/discount/all", { discount });
       set({ loading: false });
-      toast.success(`تم تطبيق خصم ${discount}% على جميع المنتجات`);
+      toast.success(
+        i18n.t(
+          "admin.discountAllApplied",
+          `تم تطبيق خصم ${discount}% على جميع المنتجات`,
+          { discount }
+        )
+      );
       return { success: true, foods: response.data.foods };
     } catch (error) {
       console.error("Apply all discount error:", error);
       const message =
-        error.response?.data?.message || "Failed to apply discount to all";
+        error.response?.data?.message ||
+        i18n.t("admin.discountError", "Failed to apply discount to all");
       set({ loading: false, error: message });
       toast.error(message);
       return { success: false, message };
     }
   },
 
-  // Remove discount from single food
   removeDiscountFromSingle: async (id) => {
     try {
       set({ loading: true, error: null });
       const response = await api.patch(`/food/discount/remove/single/${id}`);
       set({ loading: false });
-      toast.success("تم إزالة الخصم بنجاح");
+      toast.success(i18n.t("admin.discountRemoved", "تم إزالة الخصم بنجاح"));
       return { success: true, food: response.data.food };
     } catch (error) {
       console.error("Remove discount error:", error);
       const message =
-        error.response?.data?.message || "Failed to remove discount";
+        error.response?.data?.message ||
+        i18n.t("admin.discountRemoveError", "Failed to remove discount");
       set({ loading: false, error: message });
       toast.error(message);
       return { success: false, message };
     }
   },
 
-  // Remove discount from entire category
   removeDiscountFromCategory: async (category) => {
     try {
       set({ loading: true, error: null });
@@ -205,58 +226,71 @@ const useFood = create((set, get) => ({
         `/food/discount/remove/category/${category}`
       );
       set({ loading: false });
-      toast.success(`تم إزالة الخصم من جميع منتجات ${category}`);
+      toast.success(
+        i18n.t(
+          "admin.discountCategoryRemoved",
+          `تم إزالة الخصم من ${category}`,
+          { category }
+        )
+      );
       return { success: true, foods: response.data.foods };
     } catch (error) {
       console.error("Remove category discount error:", error);
       const message =
         error.response?.data?.message ||
-        "Failed to remove discount from category";
+        i18n.t(
+          "admin.discountRemoveError",
+          "Failed to remove discount from category"
+        );
       set({ loading: false, error: message });
       toast.error(message);
       return { success: false, message };
     }
   },
 
-  // Remove discount from all foods
   removeDiscountFromAll: async () => {
     try {
       set({ loading: true, error: null });
       const response = await api.patch("/food/discount/remove/all");
       set({ loading: false });
-      toast.success("تم إزالة الخصم من جميع المنتجات");
+      toast.success(
+        i18n.t("admin.discountAllRemoved", "تم إزالة الخصم من جميع المنتجات")
+      );
       return { success: true, foods: response.data.foods };
     } catch (error) {
       console.error("Remove all discounts error:", error);
       const message =
-        error.response?.data?.message || "Failed to remove discounts";
+        error.response?.data?.message ||
+        i18n.t("admin.discountRemoveError", "Failed to remove discounts");
       set({ loading: false, error: message });
       toast.error(message);
       return { success: false, message };
     }
   },
 
-  // Toggle food availability
   toggleAvailability: async (id) => {
     try {
       set({ loading: true, error: null });
       const response = await api.patch(`/food/toggle/${id}`);
       set({ loading: false });
+      const isAvailable = response.data.food.isAvailable;
       toast.success(
-        `المنتج ${response.data.food.isAvailable ? "متاح" : "غير متاح"}`
+        isAvailable
+          ? i18n.t("admin.foodToggledAvailable", "المنتج متاح")
+          : i18n.t("admin.foodToggledUnavailable", "المنتج غير متاح")
       );
       return { success: true, food: response.data.food };
     } catch (error) {
       console.error("Toggle availability error:", error);
       const message =
-        error.response?.data?.message || "Failed to toggle availability";
+        error.response?.data?.message ||
+        i18n.t("admin.foodToggleError", "Failed to toggle availability");
       set({ loading: false, error: message });
       toast.error(message);
       return { success: false, message };
     }
   },
 
-  // Clear error
   clearError: () => set({ error: null }),
 }));
 

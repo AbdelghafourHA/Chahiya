@@ -238,7 +238,32 @@
       "cancel": "Annuler",
       "save": "Enregistrer",
       "saving": "Enregistrement..."
-    }
+    },
+    "foodAdded": "Produit ajouté avec succès",
+    "foodAddError": "Échec de l'ajout du produit",
+    "foodUpdated": "Produit mis à jour avec succès",
+    "foodUpdateError": "Échec de la mise à jour du produit",
+    "foodDeleted": "Produit supprimé avec succès",
+    "foodDeleteError": "Échec de la suppression du produit",
+    "foodFetchError": "Échec de la récupération des produits",
+    "foodToggledAvailable": "Le produit est disponible",
+    "foodToggledUnavailable": "Le produit est indisponible",
+    "foodToggleError": "Échec du changement de statut du produit",
+    "discountApplied": "Remise appliquée avec succès",
+    "discountCategoryApplied": "Remise appliquée à la catégorie",
+    "discountAllApplied": "Remise appliquée à tous les produits",
+    "discountError": "Échec de l'application de la remise",
+    "discountRemoved": "Remise retirée avec succès",
+    "discountCategoryRemoved": "Remise retirée de la catégorie",
+    "discountAllRemoved": "Remise retirée de tous les produits",
+    "discountRemoveError": "Échec du retrait de la remise",
+    "locationFetchError": "Échec de la récupération des zones",
+    "locationAdded": "Zone ajoutée avec succès !",
+    "locationAddError": "Échec de l'ajout de la zone",
+    "locationUpdated": "Zone mise à jour avec succès !",
+    "locationUpdateError": "Échec de la mise à jour de la zone",
+    "locationDeleted": "Zone supprimée avec succès !",
+    "locationDeleteError": "Échec de la suppression de la zone"
   },
   "login": {
     "welcome": "Bienvenue",
@@ -249,6 +274,10 @@
     "loggingIn": "Connexion...",
     "verify": "Vérification...",
     "emailRequired": "L'email est requis",
-    "passwordRequired": "Le mot de passe est requis"
+    "passwordRequired": "Le mot de passe est requis",
+    "success": "Connexion réussie !",
+    "error": "Erreur de connexion !",
+    "logoutSuccess": "Déconnexion réussie !",
+    "logoutError": "Erreur de déconnexion !"
   }
 }

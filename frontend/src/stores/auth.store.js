@@ -1,6 +1,8 @@
+// stores/auth.store.js
 import { create } from "zustand";
 import api from "../api/axios";
 import { toast } from "react-hot-toast";
+import i18n from "../i18n"; // 👈 Imported
 
 const useAuth = create((set) => ({
   user: null,
@@ -25,7 +27,7 @@ const useAuth = create((set) => ({
         authChecked: true,
       });
 
-      toast.success("تم تسجيل الدخول بنجاح!");
+      toast.success(i18n.t("login.success", "تم تسجيل الدخول بنجاح!"));
       return true;
     } catch (error) {
       set({
@@ -33,7 +35,10 @@ const useAuth = create((set) => ({
         error: error.response?.data?.message || error.message,
         authChecked: true,
       });
-      toast.error(error.response?.data?.message || "خطأ في تسجيل الدخول!");
+      toast.error(
+        error.response?.data?.message ||
+          i18n.t("login.error", "خطأ في تسجيل الدخول!")
+      );
       return false;
     }
   },
@@ -49,14 +54,14 @@ const useAuth = create((set) => ({
         loading: false,
         authChecked: true,
       });
-      toast.success("تم تسجيل الخروج بنجاح!");
+      toast.success(i18n.t("login.logoutSuccess", "تم تسجيل الخروج بنجاح!"));
     } catch (error) {
       set({
         loading: false,
         error: error.message,
         authChecked: true,
       });
-      toast.error("خطأ في تسجيل الخروج!");
+      toast.error(i18n.t("login.logoutError", "خطأ في تسجيل الخروج!"));
     }
   },
 
