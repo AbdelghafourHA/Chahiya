@@ -2,6 +2,7 @@
 
 const pad = (n) => String(n).padStart(2, "0");
 
+// CH-20250128-1234
 export const generateOrderNumber = () => {
   const now = new Date();
   const datePart = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(
@@ -56,13 +57,21 @@ export const buildWhatsAppMessage = ({
   lines.push(``);
   lines.push(`👤 *معلومات الزبون*`);
   lines.push(`الاسم: ${customer.fullName}`);
+
   if (customer.phone && customer.phone.trim()) {
-    lines.push(`الهاتف: ${customer.phone}`);
-    lines.push(
-      `واتساب: https://wa.me/213${customer.phone
-        .replace(/\D/g, "")
-        .replace(/^0/, "")}`
+    // 1. Format the phone number with spaces (ex: 0771 04 50 98)
+    const rawPhone = customer.phone.replace(/\D/g, "");
+    const spacedPhone = rawPhone.replace(
+      /(\d{4})(\d{2})(\d{2})(\d{2})/,
+      "$1 $2 $3 $4"
     );
+
+    // 2. Wrap in backticks (`) to force LTR direction in WhatsApp
+    lines.push(`الهاتف: \`${spacedPhone}\``);
+
+    // 3. Also wrap the wa.me link in backticks
+    const waLink = `https://wa.me/213${rawPhone.replace(/^0/, "")}`;
+    lines.push(`واتساب: \`${waLink}\``);
   }
 
   if (orderType === "delivery") {
