@@ -2,10 +2,12 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUtensils, faBellConcierge } from "@fortawesome/free-solid-svg-icons";
 import { useRef } from "react";
+import { useTranslation } from "react-i18next";
 import heroImg from "../assets/Hero.jpg";
 
 export default function Hero() {
   const ref = useRef(null);
+  const { t } = useTranslation();
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
@@ -54,15 +56,14 @@ export default function Hero() {
   };
 
   const stats = [
-    { value: "08+", label: "فروع مميزة" },
-    { value: "40+", label: "طهاة محترفون" },
-    { value: "12+", label: "سنوات خبرة" },
+    { value: "08+", label: t("hero.stats.branches") },
+    { value: "40+", label: t("hero.stats.chefs") },
+    { value: "12+", label: t("hero.stats.experience") },
   ];
 
   return (
     <motion.section
       ref={ref}
-      dir="rtl"
       id="hero"
       className="relative min-h-screen flex flex-col text-primary-foreground overflow-hidden"
       initial="hidden"
@@ -96,7 +97,7 @@ export default function Hero() {
           variants={titleVariants}
           className="text-center font-heading text-4xl md:text-6xl lg:text-7xl mb-14 leading-tight tracking-wide"
         >
-          فن الطعم الأصيل
+          {t("hero.title")}
         </motion.h1>
 
         {/* Sections */}
@@ -119,18 +120,19 @@ export default function Hero() {
                 className="text-3xl mb-4 text-secondary"
               />
             </motion.div>
-            <h3 className="font-heading text-xl mb-3">من نحن</h3>
+            <h3 className="font-heading text-xl mb-3">
+              {t("hero.aboutTitle")}
+            </h3>
             <p className="text-sm text-primary-foreground/80 max-w-xs leading-relaxed mb-5">
-              نقدم تجربة طعام فريدة تمزج بين الجودة العالية والنكهات الأصيلة
-              لنصنع لحظات لا تُنسى لكل زبون.
+              {t("hero.aboutDesc")}
             </p>
             <motion.a
               href="#contact"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="border border-primary-foreground/40 px-5 py-2 rounded-full text-sm hover:bg-primary-foreground hover:text-background transition cursor-pointer inline-block"
+              className="border border-primary-foreground/40 px-5 py-2 rounded-full text-sm hover:bg-primary-foreground hover:text-black transition cursor-pointer inline-block"
             >
-              تواصل معنا
+              {t("hero.contactBtn")}
             </motion.a>
           </motion.div>
 
@@ -149,10 +151,11 @@ export default function Hero() {
                 className="text-3xl mb-4 text-secondary"
               />
             </motion.div>
-            <h3 className="font-heading text-xl mb-3">اطلب الآن</h3>
+            <h3 className="font-heading text-xl mb-3">
+              {t("hero.orderTitle")}
+            </h3>
             <p className="text-sm text-primary-foreground/80 max-w-xs leading-relaxed mb-5">
-              اطلب وجبتك بسهولة واستمتع بسرعة التوصيل مع الحفاظ على جودة الطعام
-              وطعمه المميز كما تحب.
+              {t("hero.orderDesc")}
             </p>
             <motion.a
               href="#order"
@@ -160,7 +163,7 @@ export default function Hero() {
               whileTap={{ scale: 0.95 }}
               className="bg-secondary text-secondary-foreground px-5 py-2 rounded-full text-sm hover:opacity-90 transition cursor-pointer inline-block"
             >
-              اطلب الآن
+              {t("hero.orderBtn")}
             </motion.a>
           </motion.div>
         </motion.div>

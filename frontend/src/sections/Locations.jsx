@@ -1,5 +1,6 @@
 // sections/Locations.jsx
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import useLocation from "../stores/locations.store";
 import { toast } from "react-hot-toast";
 
@@ -12,10 +13,10 @@ export default function Locations() {
     editLocation,
     removeLocation,
   } = useLocation();
-
   const [form, setForm] = useState({ title: "", price: "" });
   const [editingId, setEditingId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     fetchAllLocations();
@@ -23,11 +24,11 @@ export default function Locations() {
 
   const handleAdd = async () => {
     if (!form.title.trim()) {
-      toast.error("اسم المنطقة مطلوب");
+      toast.error(t("admin.locations.nameRequired"));
       return;
     }
     if (!form.price || form.price <= 0) {
-      toast.error("سعر التوصيل مطلوب");
+      toast.error(t("admin.locations.priceRequired"));
       return;
     }
     setIsSubmitting(true);
@@ -46,11 +47,11 @@ export default function Locations() {
 
   const handleUpdate = async () => {
     if (!form.title.trim()) {
-      toast.error("اسم المنطقة مطلوب");
+      toast.error(t("admin.locations.nameRequired"));
       return;
     }
     if (!form.price || form.price <= 0) {
-      toast.error("سعر التوصيل مطلوب");
+      toast.error(t("admin.locations.priceRequired"));
       return;
     }
     setIsSubmitting(true);
@@ -66,7 +67,7 @@ export default function Locations() {
   };
 
   const handleDelete = async (id, title) => {
-    if (window.confirm(`هل أنت متأكد من حذف "${title}"؟`)) {
+    if (window.confirm(t("admin.locations.confirmDelete", { title }))) {
       await removeLocation(id);
     }
   };
@@ -101,13 +102,14 @@ export default function Locations() {
 
   return (
     <div className="space-y-4">
-      {/* Form */}
       <div className="bg-surface border border-border p-4 rounded-2xl space-y-3">
         <div className="space-y-2">
-          <label className="block text-sm text-muted">اسم المنطقة</label>
+          <label className="block text-sm text-muted">
+            {t("admin.locations.zoneName")}
+          </label>
           <input
             type="text"
-            placeholder="مثال: وسط المدينة"
+            placeholder={t("admin.locations.zonePlaceholder")}
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
             className="w-full p-3 bg-background border border-border text-text placeholder:text-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
@@ -116,10 +118,12 @@ export default function Locations() {
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm text-muted">سعر التوصيل (دج)</label>
+          <label className="block text-sm text-muted">
+            {t("admin.locations.price")}
+          </label>
           <input
             type="number"
-            placeholder="مثال: 200"
+            placeholder={t("admin.locations.pricePlaceholder")}
             value={form.price}
             onChange={(e) => setForm({ ...form, price: e.target.value })}
             className="w-full p-3 bg-background border border-border text-text placeholder:text-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
@@ -135,14 +139,16 @@ export default function Locations() {
                 disabled={isSubmitting}
                 className="flex-1 bg-primary text-primary-foreground py-2 rounded-xl text-sm font-semibold hover:bg-primary/80 transition disabled:opacity-50"
               >
-                {isSubmitting ? "جاري التحديث..." : "تحديث"}
+                {isSubmitting
+                  ? t("admin.locations.updating")
+                  : t("admin.locations.update")}
               </button>
               <button
                 onClick={handleCancel}
                 disabled={isSubmitting}
                 className="flex-1 bg-border text-text py-2 rounded-xl text-sm hover:bg-muted/30 transition disabled:opacity-50"
               >
-                إلغاء
+                {t("admin.locations.cancel")}
               </button>
             </>
           ) : (
@@ -151,18 +157,19 @@ export default function Locations() {
               disabled={isSubmitting}
               className="w-full bg-primary text-primary-foreground py-2 rounded-xl text-sm font-semibold hover:bg-primary/80 transition disabled:opacity-50"
             >
-              {isSubmitting ? "جاري الإضافة..." : "إضافة منطقة"}
+              {isSubmitting
+                ? t("admin.locations.adding")
+                : t("admin.locations.add")}
             </button>
           )}
         </div>
       </div>
 
-      {/* List */}
       {locations.length === 0 && !loading ? (
         <div className="bg-surface border border-border p-8 rounded-2xl text-center">
-          <p className="text-muted">لا توجد مناطق توصيل</p>
+          <p className="text-muted">{t("admin.locations.empty")}</p>
           <p className="text-sm text-muted mt-2">
-            أضف منطقة جديدة من خلال النموذج أعلاه
+            {t("admin.locations.emptyDesc")}
           </p>
         </div>
       ) : (
@@ -174,7 +181,9 @@ export default function Locations() {
             >
               <div>
                 <p className="text-sm font-medium">{loc.title}</p>
-                <p className="text-xs text-primary mt-1">{loc.price} دج</p>
+                <p className="text-xs text-primary mt-1">
+                  {loc.price} {t("menu.currency")}
+                </p>
               </div>
 
               <div className="flex gap-2 text-xs">
@@ -182,13 +191,13 @@ export default function Locations() {
                   onClick={() => handleEdit(loc)}
                   className="bg-border text-text px-3 py-1.5 rounded-lg hover:bg-muted/30 transition"
                 >
-                  تعديل
+                  {t("admin.locations.editBtn")}
                 </button>
                 <button
                   onClick={() => handleDelete(loc._id, loc.title)}
                   className="bg-red-500/20 text-red-500 dark:text-red-400 px-3 py-1.5 rounded-lg hover:bg-red-500/30 transition"
                 >
-                  حذف
+                  {t("admin.locations.deleteBtn")}
                 </button>
               </div>
             </div>

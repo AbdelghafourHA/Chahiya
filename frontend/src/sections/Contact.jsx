@@ -13,6 +13,7 @@ import {
   faInstagram,
   faWhatsapp,
 } from "@fortawesome/free-brands-svg-icons";
+import { useTranslation } from "react-i18next";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -62,6 +63,8 @@ const workingHoursVariants = {
 };
 
 export default function Contact() {
+  const { t } = useTranslation();
+
   const socialLinks = [
     { icon: faFacebook, href: "#", name: "Facebook", color: "#1877f2" },
     { icon: faInstagram, href: "#", name: "Instagram", color: "#e4405f" },
@@ -69,14 +72,19 @@ export default function Contact() {
   ];
 
   const workingHours = [
-    { day: "السبت - الأربعاء", hours: "12:00 - 23:00" },
-    { day: "الخميس", hours: "14:00 - 00:00" },
-    { day: "الجمعة", hours: "مغلق" },
+    {
+      day: t("contact.days.satWed", "السبت - الأربعاء"),
+      hours: "12:00 - 23:00",
+    },
+    { day: t("contact.days.thu", "الخميس"), hours: "14:00 - 00:00" },
+    {
+      day: t("contact.days.fri", "الجمعة"),
+      hours: t("contact.days.closed", "مغلق"),
+    },
   ];
 
   return (
     <motion.section
-      dir="rtl"
       id="contact"
       initial="hidden"
       whileInView="visible"
@@ -87,14 +95,16 @@ export default function Contact() {
       <div className="container max-w-6xl mx-auto px-4">
         {/* Title */}
         <motion.div variants={itemVariants} className="text-center mb-12">
-          <h2 className="font-heading text-3xl md:text-4xl">تواصل معنا</h2>
+          <h2 className="font-heading text-3xl md:text-4xl">
+            {t("contact.title")}
+          </h2>
         </motion.div>
 
         <div className="grid md:grid-cols-2 gap-10">
           {/* RIGHT - Contact Info */}
           <motion.div
             variants={containerVariants}
-            className="space-y-8 md:text-right"
+            className="space-y-8 md:text-start"
           >
             {/* Logo & Brand */}
             <motion.div
@@ -112,8 +122,8 @@ export default function Contact() {
               whileHover="hover"
               className="space-y-4 bg-background border border-border rounded-2xl p-5"
             >
-              <h3 className="text-lg font-heading border-r-2 border-primary pr-3">
-                معلومات الاتصال
+              <h3 className="text-lg font-heading border-s-2 border-primary ps-3">
+                {t("contact.infoTitle")}
               </h3>
 
               <div className="space-y-4">
@@ -135,7 +145,7 @@ export default function Contact() {
                     />
                   </motion.div>
                   <div>
-                    <p className="text-xs text-muted">اتصل بنا</p>
+                    <p className="text-xs text-muted">{t("contact.phone")}</p>
                     <p className="text-sm font-medium" dir="ltr">
                       +213 550 00 00 00
                     </p>
@@ -159,8 +169,10 @@ export default function Contact() {
                     />
                   </motion.div>
                   <div>
-                    <p className="text-xs text-muted">موقعنا</p>
-                    <p className="text-sm">الجزائر - حي النصر، شارع فلسطين</p>
+                    <p className="text-xs text-muted">
+                      {t("contact.location")}
+                    </p>
+                    <p className="text-sm">{t("contact.locationDesc")}</p>
                   </div>
                 </motion.div>
 
@@ -181,7 +193,7 @@ export default function Contact() {
                     />
                   </motion.div>
                   <div>
-                    <p className="text-xs text-muted">البريد الإلكتروني</p>
+                    <p className="text-xs text-muted">{t("contact.email")}</p>
                     <p className="text-sm">chahiya@gmail.com</p>
                   </div>
                 </motion.div>
@@ -194,12 +206,12 @@ export default function Contact() {
               whileHover="hover"
               className="bg-background border border-border rounded-2xl p-5"
             >
-              <h3 className="text-lg font-heading border-r-2 border-primary pr-3 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-heading border-s-2 border-primary ps-3 mb-4 flex items-center gap-2">
                 <FontAwesomeIcon
                   icon={faClock}
                   className="text-primary text-sm"
                 />
-                ساعات العمل
+                {t("contact.hoursTitle")}
               </h3>
               <div className="space-y-3">
                 {workingHours.map((item, index) => (
@@ -217,7 +229,7 @@ export default function Contact() {
                     <motion.span
                       whileHover={{ scale: 1.05 }}
                       className={`text-sm ${
-                        item.hours === "مغلق"
+                        item.hours === t("contact.days.closed", "مغلق")
                           ? "text-red-500 dark:text-red-400"
                           : "text-muted"
                       }`}
@@ -235,8 +247,8 @@ export default function Contact() {
               whileHover="hover"
               className="bg-background border border-border rounded-2xl p-5"
             >
-              <h3 className="text-lg font-heading border-r-2 border-primary pr-3 mb-4">
-                تابعنا
+              <h3 className="text-lg font-heading border-s-2 border-primary ps-3 mb-4">
+                {t("contact.followUs")}
               </h3>
               <div className="flex gap-4 md:justify-start">
                 {socialLinks.map((social, index) => (
@@ -272,8 +284,8 @@ export default function Contact() {
               whileHover="hover"
               className="bg-background border border-border rounded-2xl p-5"
             >
-              <h3 className="text-lg font-heading border-r-2 border-primary pr-3 mb-4">
-                موقعنا على الخريطة
+              <h3 className="text-lg font-heading border-s-2 border-primary ps-3 mb-4">
+                {t("contact.mapTitle")}
               </h3>
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -313,9 +325,11 @@ export default function Contact() {
                   🍕
                 </motion.div>
                 <div>
-                  <p className="text-sm font-medium">طلبك عندنا بأمان</p>
+                  <p className="text-sm font-medium">
+                    {t("contact.safeOrder")}
+                  </p>
                   <p className="text-xs text-muted">
-                    توصيل سريع - جودة عالية - أسعار مناسبة
+                    {t("contact.safeOrderDesc")}
                   </p>
                 </div>
               </motion.div>

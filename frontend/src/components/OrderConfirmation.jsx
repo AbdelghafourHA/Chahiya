@@ -1,5 +1,6 @@
 // components/OrderConfirmation.jsx
 import { useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function OrderConfirmation({
   orderNumber,
@@ -8,6 +9,7 @@ export default function OrderConfirmation({
   onReset,
 }) {
   const ref = useRef(null);
+  const { t } = useTranslation();
   const restaurantPhone = import.meta.env.VITE_RESTAURANT_PHONE || "";
 
   useEffect(() => {
@@ -25,16 +27,19 @@ export default function OrderConfirmation({
           ✅
         </div>
         <h3 className="font-heading text-xl md:text-2xl text-text">
-          تم تجهيز طلبك!
+          {t("order.confirmTitle", "تم تجهيز طلبك!")}
         </h3>
         <p className="text-sm text-muted">
-          رقم الطلب:{" "}
+          {t("order.orderNumber", "رقم الطلب:")}{" "}
           <span className="font-mono font-semibold text-primary">
             {orderNumber}
           </span>
         </p>
         <p className="text-xs text-muted">
-          أرسل الرسالة في واتساب للمطعم — المطعم يتواصل مع السائق
+          {t(
+            "order.confirmDesc",
+            "أرسل الرسالة في واتساب للمطعم — المطعم يتواصل مع السائق"
+          )}
         </p>
       </div>
 
@@ -46,7 +51,7 @@ export default function OrderConfirmation({
         className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold transition text-sm md:text-base"
       >
         <span>📱</span>
-        إعادة فتح واتساب
+        {t("order.reopenWa", "إعادة فتح واتساب")}
       </a>
 
       {/* Secondary */}
@@ -56,7 +61,7 @@ export default function OrderConfirmation({
             href={`tel:${restaurantPhone}`}
             className="flex items-center justify-center gap-1 bg-secondary/15 text-secondary py-2 rounded-lg text-xs font-medium hover:bg-secondary/25 transition"
           >
-            📞 اتصل بالمطعم
+            {t("order.callRestaurant", "📞 اتصل بالمطعم")}
           </a>
         )}
         <button
@@ -64,14 +69,14 @@ export default function OrderConfirmation({
           onClick={onReset}
           className="flex items-center justify-center gap-1 bg-surface border border-border text-muted py-2 rounded-lg text-xs font-medium hover:text-text hover:bg-border transition"
         >
-          🔄 طلب جديد
+          {t("order.newOrder", "🔄 طلب جديد")}
         </button>
       </div>
 
       {/* Message preview (collapsible) */}
       <details className="text-xs">
         <summary className="cursor-pointer text-muted hover:text-text">
-          معاينة الرسالة المُرسلة
+          {t("order.previewMsg", "معاينة الرسالة المُرسلة")}
         </summary>
         <pre
           dir="rtl"
@@ -82,7 +87,10 @@ export default function OrderConfirmation({
       </details>
 
       <p className="text-[11px] text-muted text-center">
-        💡 إذا لم يفتح واتساب تلقائياً، اضغط الزر الأخضر أعلاه
+        {t(
+          "order.fallbackWa",
+          "💡 إذا لم يفتح واتساب تلقائياً، اضغط الزر الأخضر أعلاه"
+        )}
       </p>
     </div>
   );

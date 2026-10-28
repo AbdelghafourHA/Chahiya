@@ -2,10 +2,13 @@ import { motion } from "framer-motion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBurger } from "@fortawesome/free-solid-svg-icons";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import ThemeToggle from "../components/ThemeToggle.jsx";
+import LanguageSwitcher from "../components/LanguageSwitcher.jsx";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,6 +45,14 @@ export default function Navbar() {
     },
   };
 
+  // Mobile nav links mapped dynamically
+  const navLinks = [
+    { href: "#hero", label: t("nav.home") },
+    { href: "#menu", label: t("nav.menu") },
+    { href: "#order", label: t("nav.order") },
+    { href: "#contact", label: t("nav.contact") },
+  ];
+
   return (
     <motion.header
       initial="hidden"
@@ -67,7 +78,7 @@ export default function Navbar() {
                 whileTap={{ scale: 0.95 }}
                 className="hover:text-secondary transition cursor-pointer"
               >
-                الرئيسية
+                {t("nav.home")}
               </motion.a>
               <motion.a
                 href="#menu"
@@ -76,7 +87,7 @@ export default function Navbar() {
                 whileTap={{ scale: 0.95 }}
                 className="hover:text-secondary transition cursor-pointer"
               >
-                قائمة الطعام
+                {t("nav.menu")}
               </motion.a>
             </div>
 
@@ -90,7 +101,7 @@ export default function Navbar() {
               <span>شهية</span>
             </motion.div>
 
-            {/* Right Links + Toggle */}
+            {/* Right Links + Toggle + Language */}
             <div className="flex items-center gap-6 font-body text-text">
               <motion.a
                 href="#order"
@@ -99,7 +110,7 @@ export default function Navbar() {
                 whileTap={{ scale: 0.95 }}
                 className="hover:text-secondary transition cursor-pointer"
               >
-                أطلب الآن
+                {t("nav.order")}
               </motion.a>
               <motion.a
                 href="#contact"
@@ -108,10 +119,14 @@ export default function Navbar() {
                 whileTap={{ scale: 0.95 }}
                 className="hover:text-secondary transition cursor-pointer"
               >
-                تواصل معنا
+                {t("nav.contact")}
               </motion.a>
 
-              <motion.div variants={itemVariants}>
+              <motion.div
+                variants={itemVariants}
+                className="flex items-center gap-3"
+              >
+                <LanguageSwitcher />
                 <ThemeToggle />
               </motion.div>
             </div>
@@ -122,7 +137,7 @@ export default function Navbar() {
             variants={containerVariants}
             className="flex flex-col items-center gap-4 md:hidden text-text"
           >
-            {/* Logo + Toggle row */}
+            {/* Logo + Toggles row */}
             <div className="w-full flex items-center justify-between">
               <motion.div
                 variants={logoVariants}
@@ -133,34 +148,27 @@ export default function Navbar() {
                 <span>شهية</span>
               </motion.div>
 
-              <ThemeToggle />
+              <div className="flex items-center gap-2">
+                <LanguageSwitcher />
+                <ThemeToggle />
+              </div>
             </div>
 
             {/* Links */}
             <div className="w-full flex flex-wrap justify-between items-center gap-3 font-body text-xs">
-              {["الرئيسية", "قائمة الطعام", "أطلب الآن", "تواصل معنا"].map(
-                (item, index) => (
-                  <motion.a
-                    key={item}
-                    href={`#${
-                      item === "الرئيسية"
-                        ? "hero"
-                        : item === "قائمة الطعام"
-                        ? "menu"
-                        : item === "أطلب الآن"
-                        ? "order"
-                        : "contact"
-                    }`}
-                    variants={itemVariants}
-                    custom={index}
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="hover:text-secondary transition cursor-pointer"
-                  >
-                    {item}
-                  </motion.a>
-                )
-              )}
+              {navLinks.map((link, index) => (
+                <motion.a
+                  key={link.href}
+                  href={link.href}
+                  variants={itemVariants}
+                  custom={index}
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="hover:text-secondary transition cursor-pointer"
+                >
+                  {link.label}
+                </motion.a>
+              ))}
             </div>
           </motion.div>
         </motion.div>

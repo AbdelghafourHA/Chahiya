@@ -1,8 +1,10 @@
 // pages/Login.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import useAuth from "../stores/auth.store";
 import { toast } from "react-hot-toast";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -13,6 +15,7 @@ export default function Login() {
 
   const { login, isAuthenticated, checkAuth } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Check authentication status on mount
   useEffect(() => {
@@ -34,12 +37,12 @@ export default function Login() {
     e.preventDefault();
 
     if (!email.trim()) {
-      toast.error("البريد الإلكتروني مطلوب");
+      toast.error(t("login.emailRequired"));
       return;
     }
 
     if (!password.trim()) {
-      toast.error("كلمة المرور مطلوبة");
+      toast.error(t("login.passwordRequired"));
       return;
     }
 
@@ -58,7 +61,7 @@ export default function Login() {
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-white text-center">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white/60">جاري التحقق...</p>
+          <p className="text-white/60">{t("login.verify")}</p>
         </div>
       </div>
     );
@@ -70,12 +73,18 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center px-4">
+    <div className="min-h-screen bg-black flex items-center justify-center px-4 relative">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
+
       <div className="max-w-md w-full">
         {/* Logo / Title */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">مرحباً بك</h1>
-          <p className="text-white/60">تسجيل الدخول إلى لوحة التحكم</p>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            {t("login.welcome")}
+          </h1>
+          <p className="text-white/60">{t("login.subtitle")}</p>
         </div>
 
         {/* Login Form */}
@@ -86,7 +95,7 @@ export default function Login() {
           {/* Email Field */}
           <div className="space-y-2">
             <label className="block text-sm text-white/60">
-              البريد الإلكتروني
+              {t("login.email")}
             </label>
             <input
               type="email"
@@ -101,7 +110,9 @@ export default function Login() {
 
           {/* Password Field */}
           <div className="space-y-2">
-            <label className="block text-sm text-white/60">كلمة المرور</label>
+            <label className="block text-sm text-white/60">
+              {t("login.password")}
+            </label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -165,10 +176,10 @@ export default function Login() {
             {isLoggingIn ? (
               <div className="flex items-center justify-center gap-2">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>جاري تسجيل الدخول...</span>
+                <span>{t("login.loggingIn")}</span>
               </div>
             ) : (
-              "تسجيل الدخول"
+              t("login.loginBtn")
             )}
           </button>
         </form>

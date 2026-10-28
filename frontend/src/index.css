@@ -24,7 +24,6 @@
   --font-body: "Tajawal", sans-serif;
 }
 
-/* Dark mode overrides for the same tokens */
 .dark {
   color-scheme: dark;
 
@@ -45,20 +44,48 @@
   --color-accent: hsl(45 85% 60%);
 }
 
-body {
+/* Handle font based on language */
+[lang="ar"] body {
   font-family: var(--font-body);
-  color: var(--color-text);
-  background-color: var(--color-background);
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+[lang="ar"] h1,
+[lang="ar"] h2,
+[lang="ar"] h3,
+[lang="ar"] h4,
+[lang="ar"] h5,
+[lang="ar"] h6 {
   font-family: var(--font-heading);
+}
+
+/* For French and English, use a clean sans-serif */
+[lang="fr"] body,
+[lang="en"] body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+}
+
+[lang="fr"] h1,
+[lang="fr"] h2,
+[lang="fr"] h3,
+[lang="fr"] h4,
+[lang="fr"] h5,
+[lang="fr"] h6,
+[lang="en"] h1,
+[lang="en"] h2,
+[lang="en"] h3,
+[lang="en"] h4,
+[lang="en"] h5,
+[lang="en"] h6 {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+  font-weight: 800; /* Make English/French headings bolder to match Cairo */
+}
+
+body {
+  color: var(--color-text);
+  background-color: var(--color-background);
+  transition: background-color 0.3s ease, color 0.3s ease, font-family 0.3s ease;
 }
 
 .container {

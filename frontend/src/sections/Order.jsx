@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 import useFood from "../stores/food.store";
 import useLocation from "../stores/locations.store";
 import useCategory from "../stores/category.store";
@@ -38,6 +39,7 @@ const getFinalPrice = (item) =>
 /* -------------------------------------------------------------------------- */
 export default function Order() {
   const sectionRef = useRef(null);
+  const { t } = useTranslation();
 
   /* ------------------------- Store data -------------------------------- */
   const [category, setCategory] = useState("");
@@ -86,7 +88,7 @@ export default function Order() {
   const [address, setAddress] = useState("");
   const [mapsLink, setMapsLink] = useState("");
   const [tableNumber, setTableNumber] = useState("");
-  const [pickupTime, setPickupTime] = useState("أقرب وقت ممكن");
+  const [pickupTime, setPickupTime] = useState(t("order.pickupAsap"));
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -162,25 +164,24 @@ export default function Order() {
     const e = {};
 
     if (!form.fullName.trim() || form.fullName.trim().length < 3)
-      e.fullName = "الاسم يجب أن يكون 3 أحرف على الأقل";
+      e.fullName = t("order.errors.nameMin");
 
     if (orderType !== "dine-in") {
       if (!isValidAlgerianPhone(form.phone))
-        e.phone = "رقم هاتف غير صالح (مثال: 0550000000)";
+        e.phone = t("order.errors.phoneInvalid");
     }
 
-    if (cart.length === 0) e.cart = "أضف طبقاً واحداً على الأقل";
+    if (cart.length === 0) e.cart = t("order.errors.cartEmpty");
 
     if (orderType === "delivery") {
-      if (!selectedPlace) e.selectedPlace = "اختر البلدية";
-      if (!isLongEnough(address, 5))
-        e.address = "اكتب عنواناً واضحاً (5 أحرف على الأقل)";
+      if (!selectedPlace) e.selectedPlace = t("order.errors.zoneRequired");
+      if (!isLongEnough(address, 5)) e.address = t("order.errors.addressMin");
       if (mapsLink && !isValidMapsLink(mapsLink))
-        e.mapsLink = "رابط غير صالح — يجب أن يبدأ بـ http";
+        e.mapsLink = t("order.errors.mapsInvalid");
     }
 
     if (orderType === "dine-in" && !tableNumber.trim())
-      e.tableNumber = "اكتب رقم الطاولة";
+      e.tableNumber = t("order.errors.tableRequired");
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -190,7 +191,7 @@ export default function Order() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) {
-      toast.error("الرجاء إكمال الحقول المطلوبة");
+      toast.error(t("order.errors.fillRequired"));
       return;
     }
 
@@ -248,7 +249,7 @@ export default function Order() {
   const handleReset = () => {
     setConfirmation(null);
     setOrderType("delivery");
-    setPickupTime("أقرب وقت ممكن");
+    setPickupTime(t("order.pickupAsap"));
   };
 
   /* ------------------------- Loading skeleton --------------------------- */
@@ -262,12 +263,11 @@ export default function Order() {
       <section
         ref={sectionRef}
         id="order"
-        dir="rtl"
         className="py-20 bg-background text-text"
       >
         <div className="container max-w-3xl mx-auto px-4">
           <h2 className="text-center font-heading text-3xl md:text-4xl mb-12">
-            اطلب الآن
+            {t("order.title")}
           </h2>
           <div className="space-y-5 max-w-2xl mx-auto">
             <div className="grid grid-cols-3 gap-3">
@@ -289,12 +289,11 @@ export default function Order() {
     <section
       ref={sectionRef}
       id="order"
-      dir="rtl"
       className="py-20 bg-background text-text transition-colors duration-300"
     >
       <div className="container max-w-3xl mx-auto px-4">
         <h2 className="text-center font-heading text-3xl md:text-4xl mb-8">
-          اطلب الآن
+          {t("order.title")}
         </h2>
 
         {confirmation ? (
@@ -309,7 +308,7 @@ export default function Order() {
             {/* STEP 1: Order type */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-text">
-                1️⃣ نوع الطلب
+                {t("order.step1")}
               </label>
               <OrderTypeSelector
                 value={orderType}
@@ -332,13 +331,13 @@ export default function Order() {
             {/* STEP 2: Customer info */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-text">
-                2️⃣ معلوماتك
+                {t("order.step2")}
               </label>
               <div className="grid gap-3">
                 <div>
                   <input
                     type="text"
-                    placeholder="الاسم الكامل *"
+                    placeholder={t("order.name")}
                     value={form.fullName}
                     onChange={(e) =>
                       setForm({ ...form, fullName: e.target.value })
@@ -359,7 +358,7 @@ export default function Order() {
                   <div>
                     <input
                       type="tel"
-                      placeholder="رقم الهاتف * (0550 00 00 00)"
+                      placeholder={t("order.phone")}
                       value={formatPhone(form.phone)}
                       onChange={(e) =>
                         setForm({
@@ -387,7 +386,7 @@ export default function Order() {
             {orderType === "delivery" && (
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-text">
-                  3️⃣ عنوان التوصيل
+                  {t("order.step3Delivery")}
                 </label>
                 <div className="grid gap-3">
                   <div>
@@ -401,10 +400,10 @@ export default function Order() {
                       }`}
                       disabled={isSubmitting}
                     >
-                      <option value="">اختر البلدية *</option>
+                      <option value="">{t("order.zone")}</option>
                       {locations.map((loc) => (
                         <option key={loc._id} value={loc._id}>
-                          {loc.title} (+{loc.price} دج)
+                          {loc.title} (+{loc.price} {t("menu.currency")})
                         </option>
                       ))}
                     </select>
@@ -417,7 +416,7 @@ export default function Order() {
                   <div>
                     <textarea
                       rows={2}
-                      placeholder="العنوان التفصيلي * (عمارة، طابق، قرب مسجد...)"
+                      placeholder={t("order.address")}
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                       className={`w-full p-3 text-sm rounded-xl bg-surface border text-text placeholder:text-muted outline-none focus:border-primary transition resize-none ${
@@ -434,7 +433,7 @@ export default function Order() {
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <label className="text-xs text-muted">
-                        🗺️ رابط Google Maps (اختياري — يساعد السائق)
+                        {t("order.mapsLink")}
                       </label>
                       <a
                         href="https://maps.google.com"
@@ -442,7 +441,7 @@ export default function Order() {
                         rel="noopener noreferrer"
                         className="text-xs text-primary hover:underline"
                       >
-                        افتح الخريطة ↗
+                        {t("order.openMaps")}
                       </a>
                     </div>
                     <input
@@ -462,8 +461,7 @@ export default function Order() {
                       </p>
                     )}
                     <p className="text-[11px] text-muted mt-1 leading-relaxed">
-                      💡 كيفاش تجيب الرابط: افتح Google Maps → اضغط على موقعك
-                      مطولاً → "مشاركة" → "نسخ الرابط" → الصقو هنا
+                      {t("order.mapsHelp")}
                     </p>
                   </div>
                 </div>
@@ -474,11 +472,11 @@ export default function Order() {
             {orderType === "dine-in" && (
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-text">
-                  3️⃣ رقم الطاولة
+                  {t("order.step3DineIn")}
                 </label>
                 <input
                   type="text"
-                  placeholder="مثال: 5 أو A3"
+                  placeholder={t("order.tableNumber")}
                   value={tableNumber}
                   onChange={(e) => setTableNumber(e.target.value)}
                   className={`w-full p-3 text-sm rounded-xl bg-surface border text-text placeholder:text-muted outline-none focus:border-primary transition ${
@@ -491,9 +489,7 @@ export default function Order() {
                     {errors.tableNumber}
                   </p>
                 )}
-                <p className="text-[11px] text-muted">
-                  💡 اكتب الرقم المكتوب على الطاولة
-                </p>
+                <p className="text-[11px] text-muted">{t("order.tableHelp")}</p>
               </div>
             )}
 
@@ -501,7 +497,7 @@ export default function Order() {
             {orderType === "pickup" && (
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-text">
-                  3️⃣ وقت الاستلام
+                  {t("order.step3Pickup")}
                 </label>
                 <select
                   value={pickupTime}
@@ -509,12 +505,19 @@ export default function Order() {
                   className="w-full p-3 text-sm rounded-xl bg-surface border border-border text-text outline-none focus:border-primary transition"
                   disabled={isSubmitting}
                 >
-                  <option value="أقرب وقت ممكن">
-                    أقرب وقت ممكن (~{PREP_TIME_MIN} دقيقة)
+                  <option value={t("order.pickupAsap")}>
+                    {t("order.pickupAsap")} (~{PREP_TIME_MIN}{" "}
+                    {t("common.mins", "دقيقة")})
                   </option>
-                  <option value="بعد 30 دقيقة">بعد 30 دقيقة</option>
-                  <option value="بعد ساعة">بعد ساعة</option>
-                  <option value="بعد ساعتين">بعد ساعتين</option>
+                  <option value={t("order.pickup30")}>
+                    {t("order.pickup30")}
+                  </option>
+                  <option value={t("order.pickup1h")}>
+                    {t("order.pickup1h")}
+                  </option>
+                  <option value={t("order.pickup2h")}>
+                    {t("order.pickup2h")}
+                  </option>
                 </select>
               </div>
             )}
@@ -522,7 +525,7 @@ export default function Order() {
             {/* STEP 4: Menu */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-text">
-                4️⃣ اختر أطباقك
+                {t("order.step4")}
               </label>
               <div className="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1">
                 {dynamicCategories.map((cat) => (
@@ -543,7 +546,7 @@ export default function Order() {
 
               {filteredFoods.length === 0 ? (
                 <div className="text-center py-6 text-muted text-sm">
-                  لا توجد أطباق في هذا القسم
+                  {t("menu.empty")}
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-2">
@@ -568,7 +571,7 @@ export default function Order() {
                         ) : (
                           <span className="mx-1">{item.price}</span>
                         )}
-                        دج
+                        {t("menu.currency")}
                       </button>
                     );
                   })}
@@ -580,7 +583,7 @@ export default function Order() {
             <div className="bg-surface border border-border p-4 rounded-2xl space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="font-heading text-sm font-semibold">
-                  5️⃣ سلة الطلب
+                  {t("order.step5")}
                 </h3>
                 {cart.length > 0 && (
                   <button
@@ -588,13 +591,13 @@ export default function Order() {
                     onClick={clearCart}
                     className="text-xs text-red-500 hover:underline"
                   >
-                    حذف الكل
+                    {t("order.clearCart")}
                   </button>
                 )}
               </div>
 
               {cart.length === 0 && (
-                <p className="text-xs text-muted">لم تضف أي شيء بعد</p>
+                <p className="text-xs text-muted">{t("order.emptyCart")}</p>
               )}
 
               <AnimatePresence mode="popLayout">
@@ -649,18 +652,24 @@ export default function Order() {
                 <div>
                   <hr className="border-border" />
                   <div className="flex justify-between text-xs mt-3">
-                    <span>مجموع الأطباق</span>
-                    <span>{itemsPrice} دج</span>
+                    <span>{t("order.subtotal")}</span>
+                    <span>
+                      {itemsPrice} {t("menu.currency")}
+                    </span>
                   </div>
                   {orderType === "delivery" && (
                     <div className="flex justify-between text-xs mt-2">
-                      <span>سعر التوصيل</span>
-                      <span>{shipping} دج</span>
+                      <span>{t("order.shipping")}</span>
+                      <span>
+                        {shipping} {t("menu.currency")}
+                      </span>
                     </div>
                   )}
                   <div className="flex justify-between font-heading text-primary text-sm pt-2 mt-2 border-t border-border">
-                    <span>الإجمالي</span>
-                    <span>{totalPrice} دج</span>
+                    <span>{t("order.total")}</span>
+                    <span>
+                      {totalPrice} {t("menu.currency")}
+                    </span>
                   </div>
                 </div>
               )}
@@ -669,11 +678,11 @@ export default function Order() {
             {/* STEP 6: Notes */}
             <div className="space-y-2">
               <label className="block text-sm font-medium text-text">
-                6️⃣ ملاحظات (اختياري)
+                {t("order.step6")}
               </label>
               <textarea
                 rows={2}
-                placeholder="مثال: بدون بصل، حار قليلاً..."
+                placeholder={t("order.notesPlaceholder")}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="w-full p-3 text-sm rounded-xl bg-surface border border-border text-text placeholder:text-muted outline-none focus:border-primary transition resize-none"
@@ -687,11 +696,11 @@ export default function Order() {
               disabled={isSubmitting || cart.length === 0}
               className="w-full bg-secondary text-secondary-foreground py-3 rounded-xl text-sm font-semibold hover:bg-secondary/80 transition active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "جاري التحويل..." : "✅ تأكيد الطلب"}
+              {isSubmitting ? t("order.submitting") : t("order.submit")}
             </button>
 
             <p className="text-[11px] text-muted text-center">
-              بعد الضغط، راح يفتح واتساب مع رسالة جاهزة — أرسلها فقط ✌️
+              {t("order.waHelp")}
             </p>
           </form>
         )}

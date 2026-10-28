@@ -1,5 +1,6 @@
 // sections/AddProduct.jsx
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import useFood from "../stores/food.store";
 import useCategory from "../stores/category.store";
 
@@ -22,15 +23,14 @@ export default function AddProduct({ onSuccess }) {
     loading: categoriesLoading,
     fetchCategories,
   } = useCategory();
+  const { t } = useTranslation();
 
   const MAX_SIZE = 2 * 1024 * 1024;
 
-  // Fetch ALL categories (including inactive — so admin can assign products before activating)
   useEffect(() => {
     fetchCategories(false);
   }, [fetchCategories]);
 
-  // Default to first category once loaded
   useEffect(() => {
     if (!form.category && categories.length > 0) {
       setForm((prev) => ({ ...prev, category: categories[0].slug }));
@@ -40,10 +40,10 @@ export default function AddProduct({ onSuccess }) {
   const handleImage = (file) => {
     if (!file) return;
     if (file.size > MAX_SIZE) {
-      return setError("Image size must be less than 2MB");
+      return setError(t("admin.errors.imageSize"));
     }
     if (!file.type.startsWith("image/")) {
-      return setError("Please select a valid image file");
+      return setError(t("admin.errors.imageType"));
     }
     setError("");
     setForm({ ...form, image: file });
@@ -55,19 +55,19 @@ export default function AddProduct({ onSuccess }) {
     e.preventDefault();
 
     if (!form.title.trim()) {
-      setError("Product name is required");
+      setError(t("admin.errors.nameRequired"));
       return;
     }
     if (!form.price || form.price <= 0) {
-      setError("Valid price is required");
+      setError(t("admin.errors.priceRequired"));
       return;
     }
     if (!form.category) {
-      setError("Please select a category");
+      setError(t("admin.errors.catRequired"));
       return;
     }
     if (!form.image) {
-      setError("Product image is required");
+      setError(t("admin.errors.imageRequired", "Product image is required"));
       return;
     }
 
@@ -99,17 +99,19 @@ export default function AddProduct({ onSuccess }) {
 
   return (
     <div className="bg-surface border border-border rounded-2xl p-6 max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-center">Add New Product</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center">
+        {t("admin.addProduct")}
+      </h2>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Title */}
         <div className="space-y-2">
           <label className="block text-sm text-muted font-medium">
-            Product Name
+            {t("admin.productName")}
           </label>
           <input
             type="text"
-            placeholder="e.g., Margherita Pizza"
+            placeholder={t("admin.productNamePlaceholder")}
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
             className="w-full p-3 bg-background border border-border text-text placeholder:text-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
@@ -120,11 +122,11 @@ export default function AddProduct({ onSuccess }) {
         {/* Price */}
         <div className="space-y-2">
           <label className="block text-sm text-muted font-medium">
-            Price (DZ)
+            {t("admin.priceDz")}
           </label>
           <input
             type="number"
-            placeholder="e.g., 1200"
+            placeholder={t("admin.pricePlaceholder")}
             value={form.price}
             onChange={(e) => setForm({ ...form, price: e.target.value })}
             className="w-full p-3 bg-background border border-border text-text placeholder:text-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
@@ -135,7 +137,7 @@ export default function AddProduct({ onSuccess }) {
         {/* Category */}
         <div className="space-y-2">
           <label className="block text-sm text-muted font-medium">
-            Category
+            {t("admin.category")}
           </label>
           <select
             value={form.category}
@@ -144,12 +146,12 @@ export default function AddProduct({ onSuccess }) {
             disabled={isSubmitting || categoriesLoading}
           >
             {categories.length === 0 && (
-              <option value="">لا توجد أقسام — أضف قسماً أولاً</option>
+              <option value="">{t("admin.noCategories")}</option>
             )}
             {categories.map((cat) => (
               <option key={cat._id} value={cat.slug}>
                 {cat.emoji} {cat.name}
-                {!cat.isActive ? " (غير مفعل)" : ""}
+                {!cat.isActive ? ` ${t("admin.inactive")}` : ""}
               </option>
             ))}
           </select>
@@ -158,7 +160,7 @@ export default function AddProduct({ onSuccess }) {
         {/* Discount */}
         <div className="space-y-2">
           <label className="block text-sm text-muted font-medium">
-            Discount (%)
+            {t("admin.discountPercent")}
           </label>
           <input
             type="number"
@@ -172,13 +174,13 @@ export default function AddProduct({ onSuccess }) {
             className="w-full p-3 bg-background border border-border text-text placeholder:text-muted rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary transition"
             disabled={isSubmitting}
           />
-          <p className="text-xs text-muted">Leave 0 for no discount</p>
+          <p className="text-xs text-muted">{t("admin.discountHelp")}</p>
         </div>
 
         {/* Image Upload */}
         <div className="space-y-2">
           <label className="block text-sm text-muted font-medium">
-            Product Image (Max 2MB)
+            {t("admin.productImage")}
           </label>
           <input
             type="file"
@@ -209,7 +211,7 @@ export default function AddProduct({ onSuccess }) {
           disabled={isSubmitting || categories.length === 0}
           className="w-full bg-primary text-primary-foreground py-3 rounded-xl text-sm font-semibold hover:bg-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6"
         >
-          {isSubmitting ? "Adding Product..." : "Add Product"}
+          {isSubmitting ? t("admin.addingProduct") : t("admin.addProductBtn")}
         </button>
       </form>
     </div>

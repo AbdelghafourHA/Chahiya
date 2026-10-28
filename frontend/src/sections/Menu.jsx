@@ -1,6 +1,7 @@
 // sections/Menu.jsx
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 import useFood from "../stores/food.store";
 import useCategory from "../stores/category.store";
 
@@ -97,6 +98,8 @@ export default function Menu() {
     hasPrevPage: false,
   });
 
+  const { t } = useTranslation();
+
   const {
     loading: foodsLoading,
     fetchAllFoods,
@@ -154,7 +157,7 @@ export default function Menu() {
         );
 
   const tabs = [
-    { id: "all", name: "الكل", emoji: "📋" },
+    { id: "all", name: t("menu.all"), emoji: "📋" },
     ...dynamicCategories.map((c) => ({
       id: c.slug,
       name: c.name,
@@ -167,10 +170,10 @@ export default function Menu() {
 
   if (isFirstLoad) {
     return (
-      <section id="menu" dir="rtl" className="py-20 bg-background text-text">
+      <section id="menu" className="py-20 bg-background text-text">
         <div className="container mx-auto px-4">
           <h2 className="text-center font-heading text-3xl md:text-4xl mb-12">
-            اكتشف قائمتنا
+            {t("menu.title")}
           </h2>
           <div className="grid md:grid-cols-[200px_1fr] gap-10">
             <CategorySkeleton />
@@ -183,7 +186,6 @@ export default function Menu() {
 
   return (
     <motion.section
-      dir="rtl"
       id="menu"
       initial="hidden"
       whileInView="visible"
@@ -196,7 +198,7 @@ export default function Menu() {
           variants={itemVariants}
           className="text-center font-heading text-3xl md:text-4xl mb-12"
         >
-          اكتشف قائمتنا
+          {t("menu.title")}
         </motion.h2>
 
         <div className="grid md:grid-cols-[200px_1fr] gap-10">
@@ -218,7 +220,7 @@ export default function Menu() {
                     : "bg-surface border-border text-muted hover:text-text hover:border-secondary/50"
                 }`}
               >
-                <span className="ml-1">{cat.emoji}</span>
+                <span className="me-1">{cat.emoji}</span>
                 {cat.name}
               </motion.button>
             ))}
@@ -229,7 +231,7 @@ export default function Menu() {
             {/* Empty state only when NOT loading and genuinely empty */}
             {!foodsLoading && displayFoods.length === 0 ? (
               <motion.div variants={itemVariants} className="text-center py-12">
-                <p className="text-muted">لا توجد منتجات في هذا القسم</p>
+                <p className="text-muted">{t("menu.empty")}</p>
               </motion.div>
             ) : (
               <div
@@ -277,7 +279,7 @@ export default function Menu() {
                           {item.discount > 0 ? (
                             <>
                               <p className="text-xs text-muted line-through">
-                                {item.price} دج
+                                {item.price} {t("menu.currency")}
                               </p>
                               <motion.p
                                 initial={{ scale: 0.8, opacity: 0 }}
@@ -289,12 +291,12 @@ export default function Menu() {
                                   item.price -
                                     (item.price * item.discount) / 100
                                 )}{" "}
-                                دج
+                                {t("menu.currency")}
                               </motion.p>
                             </>
                           ) : (
                             <p className="font-heading text-lg text-primary">
-                              {item.price} دج
+                              {item.price} {t("menu.currency")}
                             </p>
                           )}
                         </div>
@@ -316,7 +318,7 @@ export default function Menu() {
                         {!item.isAvailable && active === "all" && (
                           <div className="absolute inset-0 bg-black/60 rounded-[50px] flex items-center justify-center">
                             <span className="bg-red-500/90 text-white text-sm px-4 py-2 rounded-full font-bold">
-                              غير متوفر
+                              {t("menu.outOfStock")}
                             </span>
                           </div>
                         )}
@@ -339,7 +341,7 @@ export default function Menu() {
                       disabled={!menuPagination.hasPrevPage}
                       className="px-4 py-2 bg-surface border border-border rounded-full text-sm text-text hover:bg-border transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      السابق
+                      {t("common.prev", "السابق")}
                     </button>
 
                     <div className="flex gap-2">
@@ -381,7 +383,7 @@ export default function Menu() {
                       disabled={!menuPagination.hasNextPage}
                       className="px-4 py-2 bg-surface border border-border rounded-full text-sm text-text hover:bg-border transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      التالي
+                      {t("common.next", "التالي")}
                     </button>
                   </motion.div>
                 )}

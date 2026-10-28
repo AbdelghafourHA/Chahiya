@@ -1,5 +1,6 @@
 // sections/ManageProducts.jsx
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import useFood from "../stores/food.store";
 import useCategory from "../stores/category.store";
 import EditProductModal from "../sections/EditProductModal";
@@ -18,6 +19,7 @@ export default function ManageProducts() {
   } = useFood();
 
   const { categories, fetchCategories } = useCategory();
+  const { t } = useTranslation();
 
   const [foods, setFoods] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,12 +39,10 @@ export default function ManageProducts() {
   const [allDiscount, setAllDiscount] = useState("");
   const [isApplyingDiscount, setIsApplyingDiscount] = useState(false);
 
-  // Load categories once
   useEffect(() => {
     fetchCategories(false);
   }, [fetchCategories]);
 
-  // Default selected category to first
   useEffect(() => {
     if (!selectedCategory && categories.length > 0) {
       setSelectedCategory(categories[0].slug);
@@ -62,9 +62,8 @@ export default function ManageProducts() {
     loadProducts();
   }, [currentPage, fetchAllFoods]);
 
-  // Helper: display category slug as "emoji name"
   const categoryLabel = (slug) => {
-    if (!slug) return "بدون قسم";
+    if (!slug) return t("admin.manageProducts.noCategory");
     const cat = categories.find((c) => c.slug === slug);
     return cat ? `${cat.emoji} ${cat.name}` : slug;
   };
@@ -79,7 +78,7 @@ export default function ManageProducts() {
   };
 
   const handleDelete = async (id, title) => {
-    if (window.confirm(`هل أنت متأكد من حذف "${title}"؟`)) {
+    if (window.confirm(t("admin.manageProducts.confirmDelete", { title }))) {
       const result = await removeFood(id);
       if (result.success) setFoods(foods.filter((f) => f._id !== id));
     }
@@ -96,11 +95,11 @@ export default function ManageProducts() {
 
   const handleCategoryDiscount = async () => {
     if (!selectedCategory) {
-      toast.error("الرجاء اختيار قسم");
+      toast.error(t("admin.manageProducts.selectCategoryError"));
       return;
     }
     if (!categoryDiscount || categoryDiscount < 0 || categoryDiscount > 100) {
-      toast.error("الرجاء إدخال نسبة خصم صحيحة بين 0 و 100");
+      toast.error(t("admin.manageProducts.invalidDiscount"));
       return;
     }
     setIsApplyingDiscount(true);
@@ -110,10 +109,9 @@ export default function ManageProducts() {
     );
     if (result.success) {
       setFoods(
-        foods.map((food) => {
-          const updated = result.foods.find((uf) => uf._id === food._id);
-          return updated || food;
-        })
+        foods.map(
+          (food) => result.foods.find((uf) => uf._id === food._id) || food
+        )
       );
       setCategoryDiscount("");
     }
@@ -122,17 +120,16 @@ export default function ManageProducts() {
 
   const handleRemoveCategoryDiscount = async () => {
     if (!selectedCategory) {
-      toast.error("الرجاء اختيار قسم");
+      toast.error(t("admin.manageProducts.selectCategoryError"));
       return;
     }
     setIsApplyingDiscount(true);
     const result = await removeDiscountFromCategory(selectedCategory);
     if (result.success) {
       setFoods(
-        foods.map((food) => {
-          const updated = result.foods.find((uf) => uf._id === food._id);
-          return updated || food;
-        })
+        foods.map(
+          (food) => result.foods.find((uf) => uf._id === food._id) || food
+        )
       );
     }
     setIsApplyingDiscount(false);
@@ -140,7 +137,7 @@ export default function ManageProducts() {
 
   const handleAllDiscount = async () => {
     if (!allDiscount || allDiscount < 0 || allDiscount > 100) {
-      toast.error("الرجاء إدخال نسبة خصم صحيحة بين 0 و 100");
+      toast.error(t("admin.manageProducts.invalidDiscount"));
       return;
     }
     setIsApplyingDiscount(true);
@@ -185,9 +182,9 @@ export default function ManageProducts() {
   if (foods.length === 0 && !loading) {
     return (
       <div className="bg-surface border border-border p-8 rounded-2xl text-center">
-        <p className="text-muted">لا توجد منتجات</p>
+        <p className="text-muted">{t("admin.manageProducts.empty")}</p>
         <p className="text-sm text-muted mt-2">
-          أضف منتجك الأول من تبويب "إضافة"
+          {t("admin.manageProducts.emptyDesc")}
         </p>
       </div>
     );
@@ -196,10 +193,14 @@ export default function ManageProducts() {
   return (
     <div className="space-y-6">
       <div className="bg-surface border border-border p-4 rounded-2xl space-y-4">
-        <h3 className="text-lg font-bold mb-3">إدارة الخصومات</h3>
+        <h3 className="text-lg font-bold mb-3">
+          {t("admin.manageProducts.discountTitle")}
+        </h3>
 
         <div className="border-b border-border pb-4">
-          <p className="text-sm text-muted mb-3">خصم حسب القسم</p>
+          <p className="text-sm text-muted mb-3">
+            {t("admin.manageProducts.discountByCategory")}
+          </p>
           <div className="flex flex-wrap gap-3">
             <select
               value={selectedCategory}
@@ -208,18 +209,18 @@ export default function ManageProducts() {
               disabled={isApplyingDiscount}
             >
               {categories.length === 0 && (
-                <option value="">لا توجد أقسام</option>
+                <option value="">{t("admin.editModal.noCategories")}</option>
               )}
               {categories.map((cat) => (
                 <option key={cat._id} value={cat.slug}>
                   {cat.emoji} {cat.name}
-                  {!cat.isActive ? " (غير مفعل)" : ""}
+                  {!cat.isActive ? ` ${t("admin.inactive")}` : ""}
                 </option>
               ))}
             </select>
             <input
               type="number"
-              placeholder="نسبة الخصم %"
+              placeholder={t("admin.manageProducts.discountPercentPlaceholder")}
               value={categoryDiscount}
               onChange={(e) => setCategoryDiscount(e.target.value)}
               className="bg-background border border-border text-text placeholder:text-muted px-3 py-2 rounded-lg text-sm w-32 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -232,24 +233,26 @@ export default function ManageProducts() {
               disabled={isApplyingDiscount || !categoryDiscount}
               className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm hover:bg-primary/80 transition disabled:opacity-50"
             >
-              تطبيق الخصم
+              {t("admin.manageProducts.applyDiscount")}
             </button>
             <button
               onClick={handleRemoveCategoryDiscount}
               disabled={isApplyingDiscount}
               className="bg-red-500/20 text-red-500 dark:text-red-400 px-4 py-2 rounded-lg text-sm hover:bg-red-500/30 transition disabled:opacity-50"
             >
-              إزالة الخصم
+              {t("admin.manageProducts.removeDiscount")}
             </button>
           </div>
         </div>
 
         <div>
-          <p className="text-sm text-muted mb-3">خصم على جميع المنتجات</p>
+          <p className="text-sm text-muted mb-3">
+            {t("admin.manageProducts.discountAll")}
+          </p>
           <div className="flex flex-wrap gap-3">
             <input
               type="number"
-              placeholder="نسبة الخصم %"
+              placeholder={t("admin.manageProducts.discountPercentPlaceholder")}
               value={allDiscount}
               onChange={(e) => setAllDiscount(e.target.value)}
               className="bg-background border border-border text-text placeholder:text-muted px-3 py-2 rounded-lg text-sm w-32 focus:outline-none focus:ring-2 focus:ring-primary"
@@ -262,14 +265,14 @@ export default function ManageProducts() {
               disabled={isApplyingDiscount || !allDiscount}
               className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm hover:bg-primary/80 transition disabled:opacity-50"
             >
-              تطبيق الخصم على الكل
+              {t("admin.manageProducts.applyAll")}
             </button>
             <button
               onClick={handleRemoveAllDiscount}
               disabled={isApplyingDiscount}
               className="bg-red-500/20 text-red-500 dark:text-red-400 px-4 py-2 rounded-lg text-sm hover:bg-red-500/30 transition disabled:opacity-50"
             >
-              إزالة الخصم من الكل
+              {t("admin.manageProducts.removeAll")}
             </button>
           </div>
         </div>
@@ -293,12 +296,14 @@ export default function ManageProducts() {
                 <p className="text-sm font-medium">{product.title}</p>
                 {!product.isAvailable && (
                   <span className="text-xs bg-red-500/20 text-red-500 dark:text-red-400 px-2 py-0.5 rounded">
-                    غير متوفر
+                    {t("admin.manageProducts.outOfStock")}
                   </span>
                 )}
                 {product.discount > 0 && (
                   <span className="text-xs bg-green-500/20 text-green-600 dark:text-green-400 px-2 py-0.5 rounded">
-                    خصم {product.discount}%
+                    {t("admin.manageProducts.discountBadge", {
+                      percent: product.discount,
+                    })}
                   </span>
                 )}
               </div>
@@ -306,17 +311,19 @@ export default function ManageProducts() {
                 {product.discount > 0 ? (
                   <>
                     <p className="text-xs text-muted line-through">
-                      {product.price} دج
+                      {product.price} {t("menu.currency")}
                     </p>
                     <p className="text-xs text-primary font-semibold">
                       {Math.floor(
                         product.price - (product.price * product.discount) / 100
                       )}{" "}
-                      دج
+                      {t("menu.currency")}
                     </p>
                   </>
                 ) : (
-                  <p className="text-xs text-primary">{product.price} دج</p>
+                  <p className="text-xs text-primary">
+                    {product.price} {t("menu.currency")}
+                  </p>
                 )}
                 <p className="text-xs text-muted">
                   • {categoryLabel(product.category)}
@@ -332,19 +339,21 @@ export default function ManageProducts() {
                     : "bg-green-500/20 text-green-600 dark:text-green-400 hover:bg-green-500/30"
                 }`}
               >
-                {product.isAvailable ? "تعطيل" : "تفعيل"}
+                {product.isAvailable
+                  ? t("admin.manageProducts.disable")
+                  : t("admin.manageProducts.enable")}
               </button>
               <button
                 onClick={() => setEditingProduct(product)}
                 className="bg-border text-text px-2 py-1 rounded hover:bg-muted/30 transition"
               >
-                تعديل
+                {t("admin.manageProducts.edit")}
               </button>
               <button
                 onClick={() => handleDelete(product._id, product.title)}
                 className="bg-red-500/20 text-red-500 dark:text-red-400 px-2 py-1 rounded hover:bg-red-500/30 transition"
               >
-                حذف
+                {t("admin.manageProducts.delete")}
               </button>
             </div>
           </div>
@@ -358,7 +367,7 @@ export default function ManageProducts() {
             disabled={!productsPagination.hasPrevPage}
             className="px-3 py-1 bg-surface border border-border text-text rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-border transition"
           >
-            السابق
+            {t("common.prev")}
           </button>
           <span className="px-3 py-1 bg-primary text-primary-foreground rounded-lg text-sm">
             {productsPagination.currentPage} / {productsPagination.totalPages}
@@ -368,7 +377,7 @@ export default function ManageProducts() {
             disabled={!productsPagination.hasNextPage}
             className="px-3 py-1 bg-surface border border-border text-text rounded-lg text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-border transition"
           >
-            التالي
+            {t("common.next")}
           </button>
         </div>
       )}

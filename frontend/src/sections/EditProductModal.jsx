@@ -1,5 +1,6 @@
 // components/EditProductModal.jsx
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import useFood from "../stores/food.store";
 import useCategory from "../stores/category.store";
 
@@ -17,9 +18,9 @@ export default function EditProductModal({ product, onClose, onEdit }) {
 
   const { editFood } = useFood();
   const { categories, fetchCategories } = useCategory();
+  const { t } = useTranslation();
   const MAX_SIZE = 2 * 1024 * 1024;
 
-  // Make sure categories are loaded when the modal opens
   useEffect(() => {
     fetchCategories(false);
   }, [fetchCategories]);
@@ -42,11 +43,11 @@ export default function EditProductModal({ product, onClose, onEdit }) {
   const handleImage = (file) => {
     if (!file) return;
     if (file.size > MAX_SIZE) {
-      setError("حجم الصورة يجب أن يكون أقل من 2MB");
+      setError(t("admin.errors.imageSize"));
       return;
     }
     if (!file.type.startsWith("image/")) {
-      setError("الرجاء اختيار صورة صالحة");
+      setError(t("admin.errors.imageType"));
       return;
     }
     setError("");
@@ -58,15 +59,15 @@ export default function EditProductModal({ product, onClose, onEdit }) {
     e.preventDefault();
 
     if (!form.title.trim()) {
-      setError("اسم المنتج مطلوب");
+      setError(t("admin.errors.nameRequired"));
       return;
     }
     if (!form.price || form.price <= 0) {
-      setError("السعر المطلوب صالح");
+      setError(t("admin.errors.priceRequired"));
       return;
     }
     if (!form.category) {
-      setError("الرجاء اختيار قسم");
+      setError(t("admin.errors.catRequired"));
       return;
     }
 
@@ -95,7 +96,7 @@ export default function EditProductModal({ product, onClose, onEdit }) {
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
       <div className="bg-surface border border-border text-text rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">تعديل المنتج</h2>
+          <h2 className="text-xl font-bold">{t("admin.editModal.title")}</h2>
           <button
             onClick={onClose}
             className="text-muted hover:text-text text-2xl transition"
@@ -106,7 +107,9 @@ export default function EditProductModal({ product, onClose, onEdit }) {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <label className="block text-sm text-muted">اسم المنتج</label>
+            <label className="block text-sm text-muted">
+              {t("admin.editModal.name")}
+            </label>
             <input
               type="text"
               value={form.title}
@@ -117,7 +120,9 @@ export default function EditProductModal({ product, onClose, onEdit }) {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm text-muted">السعر (دج)</label>
+            <label className="block text-sm text-muted">
+              {t("admin.editModal.price")}
+            </label>
             <input
               type="number"
               value={form.price}
@@ -128,7 +133,9 @@ export default function EditProductModal({ product, onClose, onEdit }) {
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm text-muted">القسم</label>
+            <label className="block text-sm text-muted">
+              {t("admin.editModal.category")}
+            </label>
             <select
               value={form.category}
               onChange={(e) => setForm({ ...form, category: e.target.value })}
@@ -136,19 +143,21 @@ export default function EditProductModal({ product, onClose, onEdit }) {
               disabled={isSubmitting}
             >
               {categories.length === 0 && (
-                <option value="">لا توجد أقسام</option>
+                <option value="">{t("admin.editModal.noCategories")}</option>
               )}
               {categories.map((cat) => (
                 <option key={cat._id} value={cat.slug}>
                   {cat.emoji} {cat.name}
-                  {!cat.isActive ? " (غير مفعل)" : ""}
+                  {!cat.isActive ? ` ${t("admin.editModal.inactive")}` : ""}
                 </option>
               ))}
             </select>
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm text-muted">الخصم (%)</label>
+            <label className="block text-sm text-muted">
+              {t("admin.editModal.discount")}
+            </label>
             <input
               type="number"
               min="0"
@@ -164,7 +173,7 @@ export default function EditProductModal({ product, onClose, onEdit }) {
 
           <div className="space-y-2">
             <label className="block text-sm text-muted">
-              صورة جديدة (اختياري)
+              {t("admin.editModal.newImage")}
             </label>
             <input
               type="file"
@@ -176,7 +185,7 @@ export default function EditProductModal({ product, onClose, onEdit }) {
             {preview && (
               <img
                 src={preview}
-                alt="معاينة"
+                alt={t("admin.editModal.preview")}
                 className="w-24 h-24 object-cover rounded-xl mt-2"
               />
             )}
@@ -191,14 +200,16 @@ export default function EditProductModal({ product, onClose, onEdit }) {
               onClick={onClose}
               className="flex-1 bg-border text-text py-2 rounded-xl text-sm hover:bg-muted/30 transition"
             >
-              إلغاء
+              {t("admin.editModal.cancel")}
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
               className="flex-1 bg-primary text-primary-foreground py-2 rounded-xl text-sm font-semibold hover:bg-primary/80 transition disabled:opacity-50"
             >
-              {isSubmitting ? "جاري الحفظ..." : "حفظ التغييرات"}
+              {isSubmitting
+                ? t("admin.editModal.saving")
+                : t("admin.editModal.save")}
             </button>
           </div>
         </form>

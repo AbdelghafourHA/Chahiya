@@ -1,15 +1,34 @@
 // components/OrderTypeSelector.jsx
-const OPTIONS = [
-  { key: "delivery", label: "توصيل", icon: "🚚", desc: "نوصلو لدارك" },
-  { key: "pickup", label: "استلام", icon: "🏃", desc: "تجي تاخذو" },
-  { key: "dine-in", label: "في المطعم", icon: "🍽️", desc: "تاكل عندنا" },
-];
+import { useTranslation } from "react-i18next";
 
 export default function OrderTypeSelector({
   value,
   onChange,
   disabled = false,
 }) {
+  const { t } = useTranslation();
+
+  const OPTIONS = [
+    {
+      key: "delivery",
+      label: t("order.delivery"),
+      icon: "🚚",
+      desc: t("order.deliveryDesc"),
+    },
+    {
+      key: "pickup",
+      label: t("order.pickup"),
+      icon: "🏃",
+      desc: t("order.pickupDesc"),
+    },
+    {
+      key: "dine-in",
+      label: t("order.dineIn"),
+      icon: "🍽️",
+      desc: t("order.dineInDesc"),
+    },
+  ];
+
   return (
     <div className="grid grid-cols-3 gap-2 md:gap-3">
       {OPTIONS.map((opt) => {
