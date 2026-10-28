@@ -59,19 +59,16 @@ export const buildWhatsAppMessage = ({
   lines.push(`الاسم: ${customer.fullName}`);
 
   if (customer.phone && customer.phone.trim()) {
-    // 1. Format the phone number with spaces (ex: 0771 04 50 98)
+    // Format the phone number with spaces (ex: 0771 04 50 98)
     const rawPhone = customer.phone.replace(/\D/g, "");
     const spacedPhone = rawPhone.replace(
       /(\d{4})(\d{2})(\d{2})(\d{2})/,
       "$1 $2 $3 $4"
     );
 
-    // 2. Wrap in backticks (`) to force LTR direction in WhatsApp
-    lines.push(`الهاتف: \`${spacedPhone}\``);
-
-    // 3. Also wrap the wa.me link in backticks
-    const waLink = `https://wa.me/213${rawPhone.replace(/^0/, "")}`;
-    lines.push(`واتساب: \`${waLink}\``);
+    // \u202D is the Left-to-Right Override (LRO) character.
+    // It forces WhatsApp to render the numbers correctly.
+    lines.push(`الهاتف: \u202D${spacedPhone}\u202C`);
   }
 
   if (orderType === "delivery") {
